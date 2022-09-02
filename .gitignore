@@ -1,0 +1,10 @@
+sd_orig
+node_modules
+venv
+venv-old
+*.zip
+*.ckpt
+*.pyc
+archive/data/*
+server/sd/models/
+__pycache__
