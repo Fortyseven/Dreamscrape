@@ -703,7 +703,6 @@ class UNet(DDPM):
     @torch.no_grad()
     def ddim_sampling(self, x_latent, cond, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
                       mask=None, init_latent=None, use_original_steps=False):
-        print(self)
         timesteps = self.ddim_timesteps
         timesteps = timesteps[:t_start]
         time_range = np.flip(timesteps)
