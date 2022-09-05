@@ -12,17 +12,17 @@ from tqdm.auto import trange, tqdm
 import torch
 from einops import rearrange
 from tqdm import tqdm
-from ..ldm.modules.distributions.distributions import DiagonalGaussianDistribution
-from ..ldm.models.autoencoder import VQModelInterface
+from .ldm.modules.distributions.distributions import DiagonalGaussianDistribution
+from .ldm.models.autoencoder import VQModelInterface
 import torch.nn as nn
 import numpy as np
 import pytorch_lightning as pl
 from functools import partial
 from pytorch_lightning.utilities.distributed import rank_zero_only
-from ..ldm.util import exists, default, instantiate_from_config
-from ..ldm.modules.diffusionmodules.util import make_beta_schedule
-from ..ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
-from ..ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
+from .ldm.util import exists, default, instantiate_from_config
+from .ldm.modules.diffusionmodules.util import make_beta_schedule
+from .ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
+from .ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
 
 
 def disabled_train(self):
@@ -518,10 +518,9 @@ class UNet(DDPM):
 
         # sampling
         if sampler == "plms":
-            breakpoint()
             self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=False)
             print(f'Data shape for PLMS sampling is {shape}')
-            os._exit(-1)
+
             samples = self.plms_sampling(conditioning, batch_size, noise,
                                          callback=callback,
                                          img_callback=img_callback,

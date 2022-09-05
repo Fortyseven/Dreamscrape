@@ -1,6 +1,6 @@
 modelUNet:
   base_learning_rate: 1.0e-04
-  target: sd.optimizedSD.ddpm.UNet
+  target: sd.ddpm.UNet
   params:
     linear_start: 0.00085
     linear_end: 0.0120
@@ -18,7 +18,7 @@ modelUNet:
     use_ema: False
 
     unetConfigEncode:
-      target: sd.optimizedSD.openaimodelSplit.UNetModelEncode
+      target: sd.openaimodelSplit.UNetModelEncode
       params:
         image_size: 32 # unused
         in_channels: 4
@@ -35,7 +35,7 @@ modelUNet:
         legacy: False
 
     unetConfigDecode:
-      target: sd.optimizedSD.openaimodelSplit.UNetModelDecode
+      target: sd.openaimodelSplit.UNetModelDecode
       params:
         image_size: 32 # unused
         in_channels: 4
@@ -52,7 +52,7 @@ modelUNet:
         legacy: False
 
 modelFirstStage:
-  target: sd.optimizedSD.ddpm.FirstStage
+  target: sd.ddpm.FirstStage
   params:
     linear_start: 0.00085
     linear_end: 0.0120
@@ -92,7 +92,7 @@ modelFirstStage:
           target: torch.nn.Identity
 
 modelCondStage:
-  target: sd.optimizedSD.ddpm.CondStage
+  target: sd.ddpm.CondStage
   params:
     linear_start: 0.00085
     linear_end: 0.0120
