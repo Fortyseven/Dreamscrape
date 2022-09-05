@@ -1,4 +1,15 @@
 {
   "git.ignoreLimitWarning": true,
-  "cSpell.words": ["cuda", "ddim", "unsqueeze"]
+  "cSpell.words": [
+    "autoencoder",
+    "ckpt",
+    "cuda",
+    "ddim",
+    "denoised",
+    "diffusionmodules",
+    "einops",
+    "timesteps",
+    "tqdm",
+    "unsqueeze"
+  ]
 }
