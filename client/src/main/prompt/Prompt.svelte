@@ -1,20 +1,33 @@
 <script>
-  import {
-    Badge,
-    Card,
-    Form,
-    FormGroup,
-    FormText,
-    Input,
-    Label,
-  } from "sveltestrap";
+  import { onMount, createEventDispatcher } from "svelte";
 
-  let prompt = "";
+  import { FormGroup, Input } from "sveltestrap";
+  import { seed, prompt, is_loading } from "../store";
+  import WaitingBar from "../ui/WaitingBar.svelte";
+
+  const dispatch = createEventDispatcher();
+  let inner;
+
+  onMount(async () => {
+    inner.focus();
+  });
+
+  function onPromptKeydown(e) {
+    if (e.keyCode === 13) {
+      dispatch("generate");
+    }
+  }
 </script>
 
 <FormGroup floating label="Prompt">
-  <Input value={prompt} />
-  <br />
-  <Input type="file" name="file" id="exampleFile" />
-  <FormText color="muted">Optionally provide an image to start from.</FormText>
+  <Input
+    bind:value={$prompt}
+    disabled={$is_loading}
+    on:keydown={onPromptKeydown}
+    bind:inner
+  />
+</FormGroup>
+
+<FormGroup floating label="Seed">
+  <Input bind:value={$seed} disabled={$is_loading} />
 </FormGroup>
