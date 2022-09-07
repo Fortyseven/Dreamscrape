@@ -6,8 +6,8 @@ https://github.com/CompVis/taming-transformers
 -- merci
 """
 
-import os
 import time
+import math
 from tqdm.auto import trange, tqdm
 import torch
 from einops import rearrange
@@ -23,6 +23,7 @@ from .ldm.util import exists, default, instantiate_from_config
 from .ldm.modules.diffusionmodules.util import make_beta_schedule
 from .ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
 from .ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
+# from samplers import CompVisDenoiser
 
 
 def disabled_train(self):
@@ -499,12 +500,12 @@ class UNet(DDPM):
                unconditional_guidance_scale=1.,
                unconditional_conditioning=None,
                ):
+
         if (self.turbo):
             self.model1.to(self.cdevice)
             self.model2.to(self.cdevice)
 
         if x0 is None:
-            print("x0", x0)
             batch_size, b1, b2, b3 = shape
             img_shape = (1, b1, b2, b3)
             tens = []
@@ -515,13 +516,14 @@ class UNet(DDPM):
                 seed += 1
             noise = torch.cat(tens)
             del tens
-
-        # sampling
-        if sampler == "plms":
             self.make_schedule(ddim_num_steps=S, ddim_eta=eta, verbose=False)
-            print(f'Data shape for PLMS sampling is {shape}')
 
-            samples = self.plms_sampling(conditioning, batch_size, noise,
+        x_latent = noise if x0 is None else x0
+        # sampling
+
+        if sampler == "plms":
+            print(f'Data shape for PLMS sampling is {shape}')
+            samples = self.plms_sampling(conditioning, batch_size, x_latent,
                                          callback=callback,
                                          img_callback=img_callback,
                                          quantize_denoised=quantize_x0,
@@ -537,10 +539,15 @@ class UNet(DDPM):
                                          )
 
         elif sampler == "ddim":
-            x_latent = noise if x0 is None else x0
             samples = self.ddim_sampling(x_latent, conditioning, S, unconditional_guidance_scale=unconditional_guidance_scale,
                                          unconditional_conditioning=unconditional_conditioning,
                                          mask=mask, init_latent=x_T, use_original_steps=False)
+
+        # elif sampler == "euler":
+        #     cvd = CompVisDenoiser(self.alphas_cumprod)
+        #     sig = cvd.get_sigmas(S)
+        #     samples = self.heun_sampling(noise, sig, conditioning, unconditional_conditioning=unconditional_conditioning,
+        #                                 unconditional_guidance_scale=unconditional_guidance_scale)
 
         if (self.turbo):
             self.model1.to("cpu")
@@ -703,6 +710,7 @@ class UNet(DDPM):
     @torch.no_grad()
     def ddim_sampling(self, x_latent, cond, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
                       mask=None, init_latent=None, use_original_steps=False):
+
         timesteps = self.ddim_timesteps
         timesteps = timesteps[:t_start]
         time_range = np.flip(timesteps)
@@ -776,6 +784,29 @@ class UNet(DDPM):
         x_prev = a_prev.sqrt() * pred_x0 + dir_xt + noise
         return x_prev
 
+    def append_zero(self, x):
+        return torch.cat([x, x.new_zeros([1])])
+
+    def get_sigmas_karras(self, n, sigma_min, sigma_max, rho=7., device='cpu'):
+        """Constructs the noise schedule of Karras et al. (2022)."""
+        ramp = torch.linspace(0, 1, n)
+        min_inv_rho = sigma_min ** (1 / rho)
+        max_inv_rho = sigma_max ** (1 / rho)
+        sigmas = (max_inv_rho + ramp * (min_inv_rho - max_inv_rho)) ** rho
+        return self.append_zero(sigmas).to(device)
+
+    def get_sigmas_exponential(self, n, sigma_min, sigma_max, device='cpu'):
+        """Constructs an exponential noise schedule."""
+        sigmas = torch.linspace(math.log(sigma_max), math.log(
+            sigma_min), n, device=device).exp()
+        return self.append_zero(sigmas)
+
+    def get_sigmas_vp(self, n, beta_d=19.9, beta_min=0.1, eps_s=1e-3, device='cpu'):
+        """Constructs a continuous VP noise schedule."""
+        t = torch.linspace(1, eps_s, n, device=device)
+        sigmas = torch.sqrt(torch.exp(beta_d * t ** 2 / 2 + beta_min * t) - 1)
+        return self.append_zero(sigmas)
+
     def to_d(self, x, sigma, denoised):
         """Converts a denoiser output to a Karras ODE derivative."""
         return (x - denoised) / self.append_dims(sigma, x.ndim)
@@ -797,15 +828,15 @@ class UNet(DDPM):
         return sigma_down, sigma_up
 
     @torch.no_grad()
-    def sample_euler(self, x, sigmas, cond, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1.):
+    def euler_sampling(self, x, sigmas, cond, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1.):
         """Implements Algorithm 2 (Euler steps) from Karras et al. (2022)."""
         extra_args = {} if extra_args is None else extra_args
-        s_in = x.new_ones([x.shape[0]])
+        s_in = x.new_ones([x.shape[0]]).half()
         for i in trange(len(sigmas) - 1, disable=disable):
             gamma = min(s_churn / (len(sigmas) - 1), 2 ** 0.5 -
                         1) if s_tmin <= sigmas[i] <= s_tmax else 0.
             eps = torch.randn_like(x) * s_noise
-            sigma_hat = sigmas[i] * (gamma + 1)
+            sigma_hat = (sigmas[i] * (gamma + 1)).half()
             if gamma > 0:
                 x = x + eps * (sigma_hat ** 2 - sigmas[i] ** 2) ** 0.5
             denoised = self.apply_model(x, sigma_hat * s_in, cond)
@@ -816,4 +847,49 @@ class UNet(DDPM):
             dt = sigmas[i + 1] - sigma_hat
             # Euler method
             x = x + d * dt
+        return x
+
+    @torch.no_grad()
+    def heun_sampling(self, x, sigmas, cond, unconditional_conditioning=None, unconditional_guidance_scale=1, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1.):
+        """Implements Algorithm 2 (Heun steps) from Karras et al. (2022)."""
+        extra_args = {} if extra_args is None else extra_args
+        print(sigmas)
+        # sigmas = self.get_sigmas_karras(steps, 0.01, 80, rho=7., device=x.device)
+        print(x[0])
+        x = x*sigmas[0]
+        print("alu", x[0])
+        s_in = x.new_ones([x.shape[0]])
+        for i in trange(len(sigmas) - 1, disable=disable):
+            gamma = min(s_churn / (len(sigmas) - 1), 2 ** 0.5 -
+                        1) if s_tmin <= sigmas[i] <= s_tmax else 0.
+            eps = torch.randn_like(x) * s_noise
+            sigma_hat = (sigmas[i] * (gamma + 1)).half()
+            if gamma > 0:
+                x = x + eps * (sigma_hat ** 2 - sigmas[i] ** 2) ** 0.5
+
+            # print(sigma_hat * s_in)
+            # x, sigma_hat * s_in, cond
+            x_in = torch.cat([x] * 2)
+            t_in = torch.cat([sigma_hat * s_in] * 2)
+            c_in = torch.cat([unconditional_conditioning, cond])
+            e_t_uncond, e_t = self.apply_model(x_in, t_in, c_in).chunk(2)
+            denoised = e_t_uncond + \
+                unconditional_guidance_scale * (e_t - e_t_uncond)
+            # denoised = self.apply_model(x, sigma_hat * s_in, cond)
+            d = self.to_d(x, sigma_hat, denoised)
+            if callback is not None:
+                callback(
+                    {'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigma_hat, 'denoised': denoised})
+            dt = sigmas[i + 1] - sigma_hat
+            # if sigmas[i + 1] == 0:
+            if 1:
+                # Euler method
+                x = x + d * dt
+            else:
+                # Heun's method
+                x_2 = x + d * dt
+                denoised_2 = self.apply_model(x_2, sigmas[i + 1] * s_in, cond)
+                d_2 = self.to_d(x_2, sigmas[i + 1], denoised_2)
+                d_prime = (d + d_2) / 2
+                x = x + d_prime * dt
         return x

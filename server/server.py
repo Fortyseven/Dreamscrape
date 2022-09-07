@@ -22,6 +22,8 @@ from sd.optimUtils import split_weighted_subprompts
 
 from flask import Flask, request, make_response
 from flask_cors import CORS
+from flask_colors import init_app
+# import profiler
 
 
 # FIXME
@@ -181,6 +183,22 @@ def generate_img2img(
 ):
 
     print("############################################generate_img2img")
+    # args = (prompt,
+    #         ddim_steps,
+    #         batch_size,
+    #         height,
+    #         width,
+    #         scale,
+    #         ddim_eta,
+    #         unet_bs,
+    #         device,
+    #         seed,
+    #         turbo,
+    #         full_precision,
+    #         strength,
+    #         image)
+    # print(args)
+
     if seed == "":
         seed = randint(0, 1000000)
 
@@ -229,10 +247,11 @@ def generate_img2img(
         precision_scope = nullcontext
 
     all_samples = []
-    seeds = ""
+
     with torch.no_grad():
         all_samples = list()
         for prompts in data:
+            print("prompts", prompts)
             with precision_scope("cuda"):
                 modelCS.to(device)
 
@@ -323,6 +342,7 @@ def generate_img2img(
     return results
 
 
+# @profiler.my_profiler
 def generate(
     prompt,
     ddim_steps,
@@ -391,6 +411,8 @@ def generate(
                     prompts = list(prompts)
 
                 subprompts, weights = split_weighted_subprompts(prompts[0])
+                print("subprompts:", subprompts)
+                print("weights:", weights)
 
                 if len(subprompts) > 1:
                     c = torch.zeros_like(uc)
@@ -511,8 +533,8 @@ def api_generate():
                 full_precision=bool(request.form.get("full_precision", False)),
                 sampler=request.form.get("sampler", "plms"),
             )
-    except:
-        print("EXCEPTION!")
+    except Exception as e:
+        print("EXCEPTION!", e)
         torch.cuda.empty_cache()
 
     return result_paths
@@ -522,4 +544,6 @@ def api_generate():
 mimetypes.init()
 mimetypes.add_type("application/javascript", ".js")
 
+# Initialize extension with your app.
+init_app(app)
 init()
