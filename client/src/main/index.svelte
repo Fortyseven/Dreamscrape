@@ -15,6 +15,8 @@
     init_image,
     strength,
     result_selected,
+    snd_error,
+    snd_finished,
   } from "./store";
 
   import {
@@ -25,6 +27,8 @@
     Button,
     ButtonGroup,
     Icon,
+    Toast,
+    Modal,
   } from "sveltestrap";
 
   import Frobs from "./frobs/Frobs.svelte";
@@ -34,6 +38,9 @@
   import InitImagePrompt from "./prompt/InitImagePrompt.svelte";
   import FormData from "form-data";
   import WaitingBar from "./ui/WaitingBar.svelte";
+
+  let hasError = false;
+  let errMessage = "";
 
   function btnGenerate() {
     const values = {
@@ -73,13 +80,17 @@
       //   data: { ...values, ...fd },
     })
       .then(function (response) {
+        console.info("Response", response.data);
+        snd_finished();
         $gen_results = response.data;
         $is_loading = false;
         $result_selected = 0;
-        console.info("Response", response.data);
       })
       .catch(function (error) {
         console.log("ERR", error);
+        snd_error();
+        hasError = true;
+        errMessage = `${error.config.url} -- ${error.message}`;
         $is_loading = false;
       });
   }
@@ -87,6 +98,8 @@
   function btnReset() {
     resetStore();
   }
+  let open = false;
+  const toggle = () => (open = !open);
 </script>
 
 <Container fluid>
@@ -110,6 +123,15 @@
               <Icon name="play-fill" />
             </Button>
           </ButtonGroup>
+          <Modal
+            body
+            header="Error"
+            isOpen={hasError}
+            toggle={() => (toggle(), (hasError = false))}
+            on:close={() => (hasError = false)}
+          >
+            {errMessage}
+          </Modal>
         </Row>
         {#if $is_loading}
           <Row>

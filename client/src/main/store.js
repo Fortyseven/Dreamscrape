@@ -60,3 +60,21 @@ export function resetStore() {
 
   gen_results.set([]);
 }
+
+let snd_error_audio = undefined;
+let snd_finished_audio = undefined;
+
+export function snd_error() {
+  if (!snd_error_audio) {
+    snd_error_audio = new Audio("/media/error.wav");
+    return;
+  }
+  snd_error_audio.play();
+}
+export function snd_finished() {
+  if (!snd_finished_audio) {
+    snd_finished_audio = new Audio("/media/finished.wav");
+    return;
+  }
+  snd_finished_audio.play();
+}
