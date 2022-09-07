@@ -2,8 +2,8 @@ import { writable } from "svelte/store";
 
 export const defaults = {
   prompt: "",
-  ddim_steps: 8,
-  batch_size: 1,
+  ddim_steps: 50,
+  batch_size: 4,
   //  ddim_steps : 8,
   //  batch_size : 4,
   width: 512,
