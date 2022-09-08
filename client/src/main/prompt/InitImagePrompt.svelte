@@ -1,12 +1,22 @@
 <script>
-  import { Form, Input, Label, Row } from "sveltestrap";
+  import {
+    Button,
+    ButtonGroup,
+    Form,
+    Icon,
+    Input,
+    Label,
+    Row,
+  } from "sveltestrap";
   import { init_image, strength } from "../store";
 
   let files;
   let previewImage;
+  let input_field;
 
   function onInitFileChange(e) {
-    console.log("got a thing", e.target.files[0]);
+    input_field = e;
+
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -17,17 +27,32 @@
       reader.readAsDataURL(file);
     }
   }
+
+  function removeImage() {
+    $init_image = undefined;
+    $strength = 0.5;
+    previewImage = undefined;
+    files = undefined;
+    if (input_field && input_field.srcElement)
+      input_field.srcElement.value = "";
+  }
 </script>
 
-<Form>
+<div>
   <Label for="file">Init Image</Label>
-  <Input
-    type="file"
-    name="file"
-    id="exampleFile"
-    bind:files
-    on:change={onInitFileChange}
-  />
+  <Row>
+    <ButtonGroup>
+      <Input
+        type="file"
+        name="file"
+        id="exampleFile"
+        bind:files
+        on:change={onInitFileChange}
+        bind:this={input_field}
+      />
+      <Button on:click={removeImage}><Icon name="x" /></Button>
+    </ButtonGroup>
+  </Row>
   {#if $init_image}
     <br />
     <Row>
@@ -46,12 +71,10 @@
       />
     </Row>
   {/if}
-</Form>
-<img
-  class:invisible_preview={!files}
-  bind:this={previewImage}
-  id="PreviewImage"
-/>
+</div>
+{#if files}
+  <img bind:this={previewImage} id="PreviewImage" />
+{/if}
 
 <style>
   #PreviewImage {
