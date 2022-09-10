@@ -18,9 +18,9 @@
   }
 
   function onBigSelected(e) {
-    if (e.ctrlKey) {
+    // if (e.ctrlKey) {
       $seed = $gen_results[$result_selected].seed;
-    }
+    // }
   }
 </script>
 
