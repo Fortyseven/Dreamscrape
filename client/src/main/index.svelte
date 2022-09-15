@@ -1,4 +1,6 @@
 <script>
+  // @ts-nocheck
+
   import {
     prompt,
     ddim_steps,
@@ -17,6 +19,7 @@
     result_selected,
     snd_error,
     snd_finished,
+    prompt_log,
   } from "./store";
 
   import {
@@ -29,19 +32,24 @@
     Icon,
     Toast,
     Modal,
+    TabPane,
+    TabContent,
   } from "sveltestrap";
 
   import Frobs from "./frobs/Frobs.svelte";
   import Prompt from "./prompt/Prompt.svelte";
   import ResultPanel from "./results/ResultPanel.svelte";
   import axios from "axios";
-  import InitImagePrompt from "./prompt/InitImagePrompt.svelte";
   import FormData from "form-data";
   import WaitingBar from "./ui/WaitingBar.svelte";
+  import Log from "./log/Log.svelte";
+  import InitImagePrompt from "./prompt/InitImagePrompt.svelte";
+  import BookmarkManager from "./bookmarks/BookmarkManager.svelte";
 
   let hasError = false;
   let errMessage = "";
 
+  /* -------------------- */
   function btnGenerate() {
     const values = {
       prompt: $prompt,
@@ -58,16 +66,20 @@
       sampler: "plms",
     };
 
-    console.info("Generating samples", values);
-
-    $is_loading = true;
+    console.debug("Generating samples", values);
 
     const fd = new FormData();
 
-    fd.append("file", $init_image);
+    if ($init_image !== undefined) {
+      //   console.debug("init_image [size]", $init_image?.length);
+      fd.append("init_image", $init_image);
+    }
+
     for (const k in values) {
       fd.append(k, values[k]);
     }
+
+    $is_loading = true;
 
     axios({
       url: "http://localhost:5000/generate",
@@ -77,79 +89,134 @@
         "Content-Type": "multipart/form-data",
       },
       data: fd,
-      //   data: { ...values, ...fd },
     })
       .then(function (response) {
-        console.info("Response", response.data);
+        console.debug("GENERATED RESPONSE", response.data);
         snd_finished();
+        $result_selected = 0;
         $gen_results = response.data;
         $is_loading = false;
-        $result_selected = 0;
+        prependToSessionLog(response.data);
+        window.sessionStorage.setItem("results", JSON.stringify(response.data));
       })
       .catch(function (error) {
-        console.log("ERR", error);
+        console.error("GENERATE ERR", error);
         snd_error();
         hasError = true;
-        errMessage = `${error.config.url} -- ${error.message}`;
+        errMessage = `${error.message}`;
         $is_loading = false;
       });
   }
 
+  /* -------------------- */
+  function prependToSessionLog(entries) {
+    for (let i in entries) {
+      let temp = $prompt_log;
+
+      temp.unshift(entries[i]);
+
+      $prompt_log = temp;
+    }
+  }
+
+  /* -------------------- */
   function btnReset() {
     resetStore();
   }
+
   let open = false;
   const toggle = () => (open = !open);
+
+  /* -------------------- */
+  document.onpaste = function (event) {
+    var items = (event.clipboardData || event.originalEvent.clipboardData)
+      .items;
+
+    // console.log(JSON.stringify(items)); // might give you mime types
+
+    for (var index in items) {
+      var item = items[index];
+      if (item.kind === "file") {
+        var blob = item.getAsFile();
+        var reader = new FileReader();
+        reader.onload = function (event) {
+          $init_image = event.target.result;
+          //   console.log(event.target.result); // data url!
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+  };
 </script>
 
-<Container fluid>
-  <Row width="100%">
-    <Col xs={12} lg={5}>
-      <Prompt on:generate={btnGenerate} />
-      <br />
-      <Col>
-        <Row>
-          <ButtonGroup>
-            <Button title="Reset" color="secondary" on:click={btnReset}>
-              <Icon name="arrow-repeat" />
-            </Button>
-            <Button
-              style="width:75%"
-              title="Generate"
-              color="primary"
-              on:click={btnGenerate}
-              disabled={$is_loading || !$prompt.length}
-            >
-              <Icon name="play-fill" />
-            </Button>
-          </ButtonGroup>
-          <Modal
-            body
-            header="Error"
-            isOpen={hasError}
-            toggle={() => (toggle(), (hasError = false))}
-            on:close={() => (hasError = false)}
-          >
-            {errMessage}
-          </Modal>
-        </Row>
-        {#if $is_loading}
-          <Row>
-            <WaitingBar style="padding: 1em" />
-          </Row>
-        {/if}
-      </Col>
-      <br />
-      <Card>
-        <Frobs />
-      </Card>
-      <br />
-      <Card>
-        <InitImagePrompt />
-      </Card>
-    </Col>
+<div id="AppWrapper">
+  <div id="Left">
+    <Prompt on:generate={btnGenerate} />
+    <br />
     <Col>
-      <ResultPanel />
+      <Row>
+        <ButtonGroup>
+          <Button title="Reset" color="secondary" on:click={btnReset}>
+            <Icon name="arrow-repeat" />
+          </Button>
+          <Button
+            style="width:75%"
+            title="Generate"
+            color="primary"
+            on:click={btnGenerate}
+            disabled={$is_loading || !$prompt.length}
+          >
+            <Icon name="play-fill" />
+          </Button>
+        </ButtonGroup>
+        <Modal
+          body
+          header="Error"
+          isOpen={hasError}
+          toggle={() => (toggle(), (hasError = false))}
+          on:close={() => (hasError = false)}
+        >
+          {errMessage}
+        </Modal>
+      </Row>
+      {#if $is_loading}
+        <Row>
+          <WaitingBar style="padding: 1em" />
+        </Row>
+      {/if}
     </Col>
-  </Row>
-</Container>
+    <br />
+    <Card>
+      <Frobs />
+    </Card>
+    <br />
+    <InitImagePrompt />
+  </div>
+  <div id="Right">
+    <TabContent>
+      <TabPane tabId="generated" tab="🖼 Generated" active>
+        <ResultPanel />
+      </TabPane>
+      <TabPane tabId="log" tab="👨‍💻 Session Log">
+        <Log />
+      </TabPane>
+      <TabPane tabId="results" tab="🔖 Bookmarks">
+        <BookmarkManager />
+      </TabPane>
+    </TabContent>
+  </div>
+</div>
+
+<style>
+  #AppWrapper {
+    display: flex;
+  }
+  #Left {
+    width: 512px;
+    margin: 0 1em;
+  }
+  #Right {
+    width: 100%;
+    margin: 0 1em;
+  }
+</style>

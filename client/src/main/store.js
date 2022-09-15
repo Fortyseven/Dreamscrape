@@ -1,11 +1,12 @@
 import { writable } from "svelte/store";
+import { getBookmarks } from "./api/bookmarks";
 
 export const defaults = {
   prompt: "",
-  ddim_steps: 50,
-  batch_size: 4,
-  //  ddim_steps : 8,
-  //  batch_size : 4,
+  //   ddim_steps: 50,
+  //   batch_size: 4,
+  ddim_steps: 8,
+  batch_size: 1,
   width: 512,
   height: 512,
   scale: 7.5,
@@ -38,7 +39,10 @@ export const is_loading = writable(false);
 export const init_image = writable(undefined);
 
 export const gen_results = writable([]);
+export const prompt_log = writable([]);
+export const bookmarks = writable([]);
 
+/* ----------------------------------------------*/
 export function resetStore() {
   prompt.set(defaults.prompt);
   ddim_steps.set(defaults.ddim_steps);
@@ -59,11 +63,13 @@ export function resetStore() {
   init_image.set(undefined);
 
   gen_results.set([]);
+  window.sessionStorage.clear();
 }
 
 let snd_error_audio = undefined;
 let snd_finished_audio = undefined;
 
+/* ----------------------------------------------*/
 export function snd_error() {
   if (!snd_error_audio) {
     snd_error_audio = new Audio("/media/error.wav");
@@ -71,10 +77,17 @@ export function snd_error() {
   }
   snd_error_audio.play();
 }
+
+/* ----------------------------------------------*/
 export function snd_finished() {
   if (!snd_finished_audio) {
     snd_finished_audio = new Audio("/media/finished.wav");
     return;
   }
   snd_finished_audio.play();
+}
+
+/* ----------------------------------------------*/
+export async function reloadBookmarks() {
+  bookmarks.set(await getBookmarks());
 }

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
+import base64
+import traceback
+import bookmark
 import io
 import mimetypes
 import numpy as np
 import os
-import re
 import time
 import torch
-import urllib.parse
 
 from torch import autocast
 from pytorch_lightning import seed_everything
@@ -23,6 +24,10 @@ from sd.optimUtils import split_weighted_subprompts
 from flask import Flask, request, make_response
 from flask_cors import CORS
 from flask_colors import init_app
+from urllib.request import urlopen
+
+import db
+
 # import profiler
 
 
@@ -111,13 +116,12 @@ def init():
 
 
 def save_images(seed, prompt, ddim_steps, ddim_eta, sampler, scale, width, height, batch_size,  samples_ddim, all_samples):
-    sample_path = os.path.join(outdir, "_".join(re.split(":| ", prompt)))[:150]
+    # sample_path = os.path.join(outdir, "_".join(re.split(":| ", prompt)))[:150]
 
-    os.makedirs(sample_path, exist_ok=True)
+    # os.makedirs(sample_path, exist_ok=True)
 
-    base_count = len(os.listdir(sample_path))
+    # base_count = len(os.listdir(sample_path))
 
-    # seeds = []
     paths = []
 
     for i in range(batch_size):
@@ -137,16 +141,26 @@ def save_images(seed, prompt, ddim_steps, ddim_eta, sampler, scale, width, heigh
             rearrange(
                 x_sample[0].cpu().numpy(), "c h w -> h w c")
 
-        save_name = os.path.join(
-            sample_path,
-            "seed_" + str(seed) + "_" +
-            f"{base_count:05}.png"
-        )
+        # save_name = os.path.join(
+        #     sample_path,
+        #     "seed_" + str(seed) + "_" +
+        #     f"{base_count:05}.png"
+        # )
 
-        Image.fromarray(x_sample.astype(np.uint8)).save(save_name)
+        img = Image.fromarray(x_sample.astype(np.uint8))
+
+        # img.save(save_name)
+
+        jpg_bytes = io.BytesIO()
+        thumb_bytes = io.BytesIO()
+
+        # img.save(png_bytes, format="PNG")
+        img.save(jpg_bytes, format="jpeg", quality=97, subsampling=0)
+        img = img.resize((64, 64))
+        img.save(thumb_bytes, format="jpeg", quality=95)
 
         paths.append({
-            "path": save_name,
+            # "path": save_name,
             "seed": str(seed),
             "ddim_steps": ddim_steps,
             "ddim_eta": ddim_eta,
@@ -154,11 +168,16 @@ def save_images(seed, prompt, ddim_steps, ddim_eta, sampler, scale, width, heigh
             "scale": scale,
             "width": width,
             "height": height,
+            "prompt": prompt,
+            "image": base64.b64encode(jpg_bytes.getvalue()).decode(),
+            "thumbnail": base64.b64encode(thumb_bytes.getvalue()).decode()
         })
 
         seed += 1
-        base_count += 1
+        # base_count += 1
 
+        del img
+        del jpg_bytes
         del x_sample
         del x_samples_ddim
 
@@ -482,24 +501,28 @@ def generate(
     return results
 
 
-@app.get("/get_image")
-def api_get_image():
-    # FIXME: sanitize this path; this is DANGEROUS as-is
-    file_path = urllib.parse.unquote(request.query_string)
-    with open(file_path, "rb") as f:
-        response = make_response(f.read())
-        response.headers.set('Content-Type', 'image/png')
-        return response
+# @ app.get("/get_image")
+# def api_get_image():
+#     # FIXME: sanitize this path; this is DANGEROUS as-is
+#     file_path = urllib.parse.unquote(request.query_string)
+#     with open(file_path, "rb") as f:
+#         response = make_response(f.read())
+#         response.headers.set('Content-Type', 'image/png')
+#         return response
 
 
-@app.post("/generate")
+@ app.post("/generate")
 def api_generate():
     image = None
     result_paths = []
 
     try:
-        if request.files:
-            image_data = request.files['file'].read()
+        if 'init_image' in request.form.keys():
+            # imgdata is expected to be a data url encoded png regardless
+            # of whether it was uploaded or pasted in
+            with urlopen(request.form.get('init_image')) as imgdata:
+                image_data = imgdata.read()
+
             image = Image.open(io.BytesIO(image_data))
             result_paths = generate_img2img(
                 prompt=request.form.get("prompt", ""),
@@ -518,6 +541,7 @@ def api_generate():
                 image=image
             )
         else:
+            print("REQUEST", request.form)
             result_paths = generate(
                 prompt=request.form.get("prompt", ""),
                 ddim_steps=int(request.form.get("ddim_steps", 50)),
@@ -535,7 +559,9 @@ def api_generate():
             )
     except Exception as e:
         print("EXCEPTION!", e)
+        print(traceback.print_tb(e.__traceback__))
         torch.cuda.empty_cache()
+        return "Fuck", 500
 
     return result_paths
 
@@ -544,6 +570,17 @@ def api_generate():
 mimetypes.init()
 mimetypes.add_type("application/javascript", ".js")
 
+db.init()
+
 # Initialize extension with your app.
 init_app(app)
+
+
+app.add_url_rule('/bookmark', view_func=bookmark.getBookmarks,
+                 methods=["GET"])
+app.add_url_rule('/bookmark', view_func=bookmark.saveBookmark,
+                 methods=["POST"])
+app.add_url_rule('/bookmark', view_func=bookmark.deleteBookmark,
+                 methods=["DELETE"])
+
 init()

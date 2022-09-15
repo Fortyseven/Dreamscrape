@@ -8,6 +8,8 @@
     "denoised",
     "diffusionmodules",
     "einops",
+    "parms",
+    "subsampling",
     "timesteps",
     "tqdm",
     "unsqueeze"

@@ -10,7 +10,6 @@
     ddim_eta,
     do_upscale,
     turbo,
-    init_image,
     defaults,
   } from "../store";
 </script>
