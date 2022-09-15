@@ -8,3 +8,5 @@ venv-old
 archive/data/*
 server/sd/models/
 __pycache__
+.vscode
+*.orig
