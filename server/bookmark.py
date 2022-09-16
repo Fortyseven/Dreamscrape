@@ -2,8 +2,8 @@ import base64
 import datetime
 import sqlite3
 from urllib import request
-from flask import request, make_response
-import db
+from flask import request
+import common
 
 # db = None
 
@@ -12,9 +12,9 @@ def getBookmarks():
 
     sql = "SELECT * FROM bookmarks ORDER BY id DESC"
 
-    db.conn.row_factory = sqlite3.Row
+    common.db.row_factory = sqlite3.Row
 
-    cur = db.conn.cursor()
+    cur = common.db.cursor()
     cur.execute(sql)
 
     # merges keys/values
@@ -34,9 +34,9 @@ def deleteBookmark():
     print("DELETE", data['id'])
     sql = "DELETE FROM bookmarks WHERE id=?"
 
-    cur = db.conn.cursor()
+    cur = common.db.cursor()
     cur.execute(sql, (int(data['id']),))
-    db.conn.commit()
+    common.db.commit()
     return "ok"
 
 
@@ -71,9 +71,9 @@ def saveBookmark():
             memoryview(image),
             init_image
         )
-        cur = db.conn.cursor()
+        cur = common.db.cursor()
         cur.execute(sql, parms)
-        db.conn.commit()
+        common.db.commit()
         return "ok"
     except Exception as e:
         print("EXCEPTION", e)
