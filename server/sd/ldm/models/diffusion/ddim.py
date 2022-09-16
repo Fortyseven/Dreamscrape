@@ -80,7 +80,7 @@ class DDIMSampler(object):
                noise_dropout=0.,
                score_corrector=None,
                corrector_kwargs=None,
-               verbose=True,
+               verbose=False,
                x_T=None,
                log_every_t=100,
                unconditional_guidance_scale=1.,

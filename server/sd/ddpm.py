@@ -6,7 +6,7 @@ https://github.com/CompVis/taming-transformers
 -- merci
 """
 
-import time
+# import time
 import math
 from tqdm.auto import trange, tqdm
 import torch
@@ -14,7 +14,7 @@ from einops import rearrange
 from tqdm import tqdm
 from .ldm.modules.distributions.distributions import DiagonalGaussianDistribution
 from .ldm.models.autoencoder import VQModelInterface
-import torch.nn as nn
+# import torch.nn as nn
 import numpy as np
 import pytorch_lightning as pl
 from functools import partial
@@ -494,7 +494,7 @@ class UNet(DDPM):
                noise_dropout=0.,
                score_corrector=None,
                corrector_kwargs=None,
-               verbose=True,
+               verbose=False,
                x_T=None,
                log_every_t=100,
                unconditional_guidance_scale=1.,
