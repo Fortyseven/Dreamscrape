@@ -621,8 +621,6 @@ def degradation_bsrgan_variant(image, sf=4, isp_model=None):
     return example
 
 
-
-
 if __name__ == '__main__':
     print("hey")
     img = util.imread_uint('utils/test.png', 3)

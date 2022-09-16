@@ -6,10 +6,10 @@ import torch
 import cv2
 from torchvision.utils import make_grid
 from datetime import datetime
-#import matplotlib.pyplot as plt   # TODO: check with Dominik, also bsrgan.py vs bsrgan_light.py
+# import matplotlib.pyplot as plt   # TODO: check with Dominik, also bsrgan.py vs bsrgan_light.py
 
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 '''
@@ -49,11 +49,11 @@ def surf(Z, cmap='rainbow', figsize=None):
     ax3 = plt.axes(projection='3d')
 
     w, h = Z.shape[:2]
-    xx = np.arange(0,w,1)
-    yy = np.arange(0,h,1)
+    xx = np.arange(0, w, 1)
+    yy = np.arange(0, h, 1)
     X, Y = np.meshgrid(xx, yy)
-    ax3.plot_surface(X,Y,Z,cmap=cmap)
-    #ax3.contour(X,Y,Z, zdim='z',offset=-2，cmap=cmap)
+    ax3.plot_surface(X, Y, Z, cmap=cmap)
+    # ax3.contour(X,Y,Z, zdim='z',offset=-2，cmap=cmap)
     plt.show()
 
 
@@ -85,7 +85,7 @@ def _get_paths_from_images(path):
 
 '''
 # --------------------------------------------
-# split large images into small images 
+# split large images into small images
 # --------------------------------------------
 '''
 
@@ -102,7 +102,7 @@ def patches_from_image(img, p_size=512, p_overlap=64, p_max=800):
 #        print(h1)
         for i in w1:
             for j in h1:
-                patches.append(img[i:i+p_size, j:j+p_size,:])
+                patches.append(img[i:i+p_size, j:j+p_size, :])
     else:
         patches.append(img)
 
@@ -139,9 +139,10 @@ def split_imageset(original_dataroot, taget_dataroot, n_channels=3, p_size=800, 
         # img_name, ext = os.path.splitext(os.path.basename(img_path))
         img = imread_uint(img_path, n_channels=n_channels)
         patches = patches_from_image(img, p_size, p_overlap, p_max)
-        imssave(patches, os.path.join(taget_dataroot,os.path.basename(img_path)))
-        #if original_dataroot == taget_dataroot:
+        imssave(patches, os.path.join(taget_dataroot, os.path.basename(img_path)))
+        # if original_dataroot == taget_dataroot:
         #del img_path
+
 
 '''
 # --------------------------------------------
@@ -206,12 +207,12 @@ def imsave(img, img_path):
         img = img[:, :, [2, 1, 0]]
     cv2.imwrite(img_path, img)
 
+
 def imwrite(img, img_path):
     img = np.squeeze(img)
     if img.ndim == 3:
         img = img[:, :, [2, 1, 0]]
     cv2.imwrite(img_path, img)
-
 
 
 # --------------------------------------------
@@ -317,6 +318,8 @@ def tensor2single(img):
     return img
 
 # convert torch tensor to single
+
+
 def tensor2single3(img):
     img = img.data.squeeze().float().cpu().numpy()
     if img.ndim == 3:
@@ -658,7 +661,7 @@ def calculate_ssim(img1, img2, border=0):
         if img1.shape[2] == 3:
             ssims = []
             for i in range(3):
-                ssims.append(ssim(img1[:,:,i], img2[:,:,i]))
+                ssims.append(ssim(img1[:, :, i], img2[:, :, i]))
             return np.array(ssims).mean()
         elif img1.shape[2] == 1:
             return ssim(np.squeeze(img1), np.squeeze(img2))

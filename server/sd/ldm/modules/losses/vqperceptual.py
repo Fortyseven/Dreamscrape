@@ -10,12 +10,13 @@ from taming.modules.losses.vqperceptual import hinge_d_loss, vanilla_d_loss
 
 def hinge_d_loss_with_exemplar_weights(logits_real, logits_fake, weights):
     assert weights.shape[0] == logits_real.shape[0] == logits_fake.shape[0]
-    loss_real = torch.mean(F.relu(1. - logits_real), dim=[1,2,3])
-    loss_fake = torch.mean(F.relu(1. + logits_fake), dim=[1,2,3])
+    loss_real = torch.mean(F.relu(1. - logits_real), dim=[1, 2, 3])
+    loss_fake = torch.mean(F.relu(1. + logits_fake), dim=[1, 2, 3])
     loss_real = (weights * loss_real).sum() / weights.sum()
     loss_fake = (weights * loss_fake).sum() / weights.sum()
     d_loss = 0.5 * (loss_real + loss_fake)
     return d_loss
+
 
 def adopt_weight(weight, global_step, threshold=0, value=0.):
     if global_step < threshold:
@@ -31,6 +32,7 @@ def measure_perplexity(predicted_indices, n_embed):
     perplexity = (-(avg_probs * torch.log(avg_probs + 1e-10)).sum()).exp()
     cluster_use = torch.sum(avg_probs > 0)
     return perplexity, cluster_use
+
 
 def l1(x, y):
     return torch.abs(x-y)

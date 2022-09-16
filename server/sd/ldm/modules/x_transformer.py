@@ -544,7 +544,6 @@ class Encoder(AttentionLayers):
         super().__init__(causal=False, **kwargs)
 
 
-
 class TransformerWrapper(nn.Module):
     def __init__(
             self,
@@ -571,7 +570,7 @@ class TransformerWrapper(nn.Module):
 
         self.token_emb = nn.Embedding(num_tokens, emb_dim)
         self.pos_emb = AbsolutePositionalEmbedding(emb_dim, max_seq_len) if (
-                    use_pos_emb and not attn_layers.has_pos_emb) else always(0)
+            use_pos_emb and not attn_layers.has_pos_emb) else always(0)
         self.emb_dropout = nn.Dropout(emb_dropout)
 
         self.project_emb = nn.Linear(emb_dim, dim) if emb_dim != dim else nn.Identity()
@@ -638,4 +637,3 @@ class TransformerWrapper(nn.Module):
             return out, attn_maps
 
         return out
-
