@@ -4,19 +4,15 @@ import traceback
 import bookmark
 import io
 import mimetypes
-import numpy as np
 import torch
 
 from torch import autocast
-# from pytorch_lightning import seed_everything
 from contextlib import nullcontext
-# from einops import rearrange, repeat
 from omegaconf import OmegaConf
 from PIL import Image
 from random import randint
 
 from sd.ldm.util import instantiate_from_config
-# from sd.optimUtils import split_weighted_subprompts
 
 from flask import Flask, request, make_response
 from flask_cors import CORS
@@ -24,10 +20,6 @@ from flask_colors import init_app
 from urllib.request import urlopen
 
 import common
-
-# from modes.txt2txt import generate_txt2txt
-# from modes.img2img import generate_img2img
-
 import modes
 
 # import profiler
@@ -44,29 +36,15 @@ CORS(app)
 
 def load_model_from_config(ckpt, verbose=False):
     print(f"# Loading model from {ckpt}")
+
     pl_sd = torch.load(ckpt, map_location="cpu")
+
     if "global_step" in pl_sd:
         print(f"# Global Step: {pl_sd['global_step']}")
+
     sd = pl_sd["state_dict"]
+
     return sd
-
-
-# def load_img(image, h0, w0):
-#     image = image.convert("RGB")
-#     w, h = image.size
-#     print(f"# Loaded input image of size ({w}, {h})")
-#     if h0 is not None and w0 is not None:
-#         h, w = h0, w0
-
-#     # resize to integer multiple of 32
-#     w, h = map(lambda x: x - x % 64, (w, h))
-
-#     print(f"# New image size ({w}, {h})")
-#     image = image.resize((w, h), resample=Image.LANCZOS)
-#     image = np.array(image).astype(np.float32) / 255.0
-#     image = image[None].transpose(0, 3, 1, 2)
-#     image = torch.from_numpy(image)
-#     return 2.0 * image - 1.0
 
 
 def init():
@@ -125,7 +103,10 @@ def api_generate():
                 image_data = imgdata.read()
 
             image = Image.open(io.BytesIO(image_data))
-            result_paths = modes.img2img.generate(
+            # mask = Image.open(io.BytesIO(image_data))
+            mask_img = Image.open('/tmp/512mask.png')
+            # mask = modes.modes.shared.load_mask(mask_img)
+            result_paths = modes.inpaint.generate(
                 prompt=request.form.get("prompt", ""),
                 ddim_steps=int(request.form.get("ddim_steps", 50)),
                 batch_size=int(request.form.get("batch_size", 1)),
@@ -139,7 +120,8 @@ def api_generate():
                 turbo=bool(request.form.get("turbo", True)),
                 full_precision=bool(request.form.get("full_precision", False)),
                 strength=float(request.form.get("strength", 0.5)),
-                image=image
+                image=image,
+                mask=mask_img
             )
         else:
             print("# REQUEST", request.form)

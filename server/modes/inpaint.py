@@ -7,13 +7,17 @@ from einops import repeat
 from random import randint
 
 from sd.optimUtils import split_weighted_subprompts
+from PIL import Image
 
-from modes.shared import save_images, load_img
+from modes.shared import load_mask, save_images, load_img
 import common
 
 
 def generate(
+    image,
+    mask,
     prompt,
+    strength,
     ddim_steps,
     batch_size,
     height,
@@ -25,10 +29,8 @@ def generate(
     seed,
     turbo,
     full_precision,
-    strength,
-    image
 ):
-    print("############################################generate_img2img")
+    print("############################################generate_inpaint")
 
     if seed == "":
         seed = randint(0, 1000000)
@@ -39,6 +41,7 @@ def generate(
     sampler = "ddim"
 
     init_image = load_img(image, height, width).to(device)
+    mask = load_mask(mask, height, width, True).to(device)
 
     common.model.unet_bs = unet_bs
     common.model.turbo = turbo
@@ -50,6 +53,10 @@ def generate(
         common.modelCS.half()
         common.modelFS.half()
         init_image = init_image.half()
+        mask.half()
+
+    mask = mask[0][0].unsqueeze(0).repeat(4, 1, 1).unsqueeze(0)
+    mask = repeat(mask, '1 ... -> b ...', b=batch_size)
 
     tic = time.time()
 
@@ -57,10 +64,13 @@ def generate(
     data = [batch_size * [prompt]]
 
     common.modelFS.to(device)
-# TODO: check  similar spot in  inpaint mode
-    init_image = repeat(init_image, "1 ... -> b ...", b=batch_size)
+
+    # move to latent space
     init_latent = common.modelFS.get_first_stage_encoding(
-        common.modelFS.encode_first_stage(init_image))  # move to latent space
+        common.modelFS.encode_first_stage(init_image)
+    )
+
+    init_latent = repeat(init_latent, "1 ... -> b ...", b=batch_size)
 
     if device != "cpu":
         mem = torch.cuda.memory_allocated() / 1e6
@@ -68,7 +78,7 @@ def generate(
         while torch.cuda.memory_allocated() / 1e6 >= mem:
             time.sleep(1)
 
-    assert 0.0 <= strength <= 1.0, "can only work with strength in [0.0, 1.0]"
+    assert 0.0 <= strength <= 1.0, "can only work with strength in [0.0, 0.99999...]"
 
     t_enc = int(strength * ddim_steps)
 
@@ -127,6 +137,7 @@ def generate(
                     ddim_eta,
                     ddim_steps
                 )
+
                 # decode it
                 samples_ddim = common.model.sample(
                     t_enc,
@@ -134,10 +145,13 @@ def generate(
                     z_enc,
                     unconditional_guidance_scale=scale,
                     unconditional_conditioning=uc,
-                    sampler=sampler
+                    mask=mask,
+                    x_T=init_latent,
+                    sampler=sampler,
                 )
 
                 common.modelFS.to(device)
+
                 print("# saving images")
 
                 results = save_images(
@@ -152,6 +166,18 @@ def generate(
                     batch_size,
                     samples_ddim,
                     all_samples)
+                # results = save_images(
+                #     seed,
+                #     prompt,
+                #     ddim_steps,
+                #     ddim_eta,
+                #     sampler,
+                #     scale,
+                #     width,
+                #     height,
+                #     batch_size,
+                #     samples_ddim,
+                #     all_samples)
 
                 if device != "cpu":
                     mem = torch.cuda.memory_allocated() / 1e6
@@ -162,13 +188,7 @@ def generate(
                 del samples_ddim
 
     toc = time.time()
+
     time_taken = (toc - tic) / 60.0
-
-    # grid = torch.cat(all_samples, 0)
-    # grid = make_grid(grid, nrow=n_iter)
-    # grid = 255.0 * rearrange(grid, "c h w -> h w c").cpu().numpy()
-
-    mins = str(round(time_taken, 3))
-    txt = (f"Finished in {mins} minutes.")
 
     return results
