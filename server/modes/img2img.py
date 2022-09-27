@@ -38,7 +38,7 @@ def generate(
 
     sampler = "ddim"
 
-    init_image = load_img(image, height, width).to(device)
+    src_image = load_img(image, height, width).to(device)
 
     common.model.unet_bs = unet_bs
     common.model.turbo = turbo
@@ -49,7 +49,7 @@ def generate(
         common.model.half()
         common.modelCS.half()
         common.modelFS.half()
-        init_image = init_image.half()
+        src_image = src_image.half()
 
     tic = time.time()
 
@@ -58,9 +58,9 @@ def generate(
 
     common.modelFS.to(device)
 # TODO: check  similar spot in  inpaint mode
-    init_image = repeat(init_image, "1 ... -> b ...", b=batch_size)
+    src_image = repeat(src_image, "1 ... -> b ...", b=batch_size)
     init_latent = common.modelFS.get_first_stage_encoding(
-        common.modelFS.encode_first_stage(init_image))  # move to latent space
+        common.modelFS.encode_first_stage(src_image))  # move to latent space
 
     if device != "cpu":
         mem = torch.cuda.memory_allocated() / 1e6

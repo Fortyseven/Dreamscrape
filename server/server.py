@@ -92,19 +92,29 @@ def init():
 
 @ app.post("/generate")
 def api_generate():
-    image = None
+    src_image = None
     result_paths = []
 
     try:
-        if 'init_image' in request.form.keys():
-            # imgdata is expected to be a data url encoded png regardless
+        if 'src_image' in request.form.keys():
+            # imgdata is expected to be a DATA URL encoded png regardless
             # of whether it was uploaded or pasted in
-            with urlopen(request.form.get('init_image')) as imgdata:
-                image_data = imgdata.read()
+            with urlopen(request.form.get('src_image')) as imgdata:
+                src_image_data = imgdata.read()
 
-            image = Image.open(io.BytesIO(image_data))
-            # mask = Image.open(io.BytesIO(image_data))
-            mask_img = Image.open('/tmp/512mask.png')
+            src_image = Image.open(io.BytesIO(src_image_data))
+
+            mask_image_data = None
+
+            if request.form.get('mask_image'):
+                print("HAS MASK!")
+                with urlopen(request.form.get('mask_image')) as imgdata:
+                    mask_image_data = imgdata.read()
+                    mask = Image.open(io.BytesIO(mask_image_data))
+            else:
+                mask = None
+                print("NO MASK")
+
             # mask = modes.modes.shared.load_mask(mask_img)
             result_paths = modes.inpaint.generate(
                 prompt=request.form.get("prompt", ""),
@@ -120,8 +130,8 @@ def api_generate():
                 turbo=bool(request.form.get("turbo", True)),
                 full_precision=bool(request.form.get("full_precision", False)),
                 strength=float(request.form.get("strength", 0.5)),
-                image=image,
-                mask=mask_img
+                image=src_image,
+                mask=mask
             )
         else:
             print("# REQUEST", request.form)

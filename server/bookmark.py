@@ -23,7 +23,7 @@ def getBookmarks():
     for r in rows['result']:
         r['image'] = base64.b64encode(r['image']).decode()
         r['thumbnail'] = base64.b64encode(r['thumbnail']).decode()
-        # r['init_image'] = base64.b64encode(r['init_image'])
+        # r['src_image'] = base64.b64encode(r['src_image'])
 
     return rows
 
@@ -46,15 +46,15 @@ def saveBookmark():
         data = request.get_json()
         sql = '''
             INSERT INTO bookmarks(
-                created, seed, prompt, ddim_steps, width, height, scale, ddim_eta, sampler, strength, thumbnail, image, init_image
+                created, seed, prompt, ddim_steps, width, height, scale, ddim_eta, sampler, strength, thumbnail, image, src_image
                 ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
             '''
 
         image = base64.standard_b64decode(data['image'])
         thumb = base64.standard_b64decode(data['thumbnail'])
-        init_image = None
-        if 'init_image' in data:
-            init_image = base64.standard_b64decode(data['init_image'])
+        src_image = None
+        if 'src_image' in data:
+            src_image = base64.standard_b64decode(data['src_image'])
 
         parms = (
             datetime.datetime.now(),
@@ -69,7 +69,7 @@ def saveBookmark():
             data.get('strength', None),
             memoryview(thumb),
             memoryview(image),
-            init_image
+            src_image
         )
         cur = common.db.cursor()
         cur.execute(sql, parms)

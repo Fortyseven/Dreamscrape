@@ -40,8 +40,10 @@ def generate(
 
     sampler = "ddim"
 
-    init_image = load_img(image, height, width).to(device)
-    mask = load_mask(mask, height, width, True).to(device)
+    src_image = load_img(image, height, width).to(device)
+
+    if mask:
+        mask = load_mask(mask, height, width, True).to(device)
 
     common.model.unet_bs = unet_bs
     common.model.turbo = turbo
@@ -52,11 +54,13 @@ def generate(
         common.model.half()
         common.modelCS.half()
         common.modelFS.half()
-        init_image = init_image.half()
-        mask.half()
+        src_image = src_image.half()
+        if mask:
+            mask.half()
 
-    mask = mask[0][0].unsqueeze(0).repeat(4, 1, 1).unsqueeze(0)
-    mask = repeat(mask, '1 ... -> b ...', b=batch_size)
+    if mask:
+        mask = mask[0][0].unsqueeze(0).repeat(4, 1, 1).unsqueeze(0)
+        mask = repeat(mask, '1 ... -> b ...', b=batch_size)
 
     tic = time.time()
 
@@ -67,7 +71,7 @@ def generate(
 
     # move to latent space
     init_latent = common.modelFS.get_first_stage_encoding(
-        common.modelFS.encode_first_stage(init_image)
+        common.modelFS.encode_first_stage(src_image)
     )
 
     init_latent = repeat(init_latent, "1 ... -> b ...", b=batch_size)
