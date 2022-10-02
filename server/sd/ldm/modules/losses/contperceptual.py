@@ -108,3 +108,4 @@ class LPIPSWithDiscriminator(nn.Module):
                    "{}/logits_fake".format(split): logits_fake.detach().mean()
                    }
             return d_loss, log
+

@@ -1,14 +1,13 @@
 import gc
 from inspect import isfunction
 import math
-from xml.dom.pulldom import PullDOM
 import torch
 import torch.nn.functional as F
 from torch import nn, einsum
 from einops import rearrange, repeat
+from rich import print
 
-
-from ...ldm.modules.diffusionmodules.util import checkpoint
+from sd.ldm.modules.diffusionmodules.util import checkpoint
 
 
 def exists(val):
@@ -16,7 +15,7 @@ def exists(val):
 
 
 def uniq(arr):
-    return {el: True for el in arr}.keys()
+    return{el: True for el in arr}.keys()
 
 
 def default(val, d):
@@ -91,13 +90,11 @@ class LinearAttention(nn.Module):
     def forward(self, x):
         b, c, h, w = x.shape
         qkv = self.to_qkv(x)
-        q, k, v = rearrange(
-            qkv, 'b (qkv heads c) h w -> qkv b heads c (h w)', heads=self.heads, qkv=3)
+        q, k, v = rearrange(qkv, 'b (qkv heads c) h w -> qkv b heads c (h w)', heads=self.heads, qkv=3)
         k = k.softmax(dim=-1)
         context = torch.einsum('bhdn,bhen->bhde', k, v)
         out = torch.einsum('bhde,bhdn->bhen', context, q)
-        out = rearrange(out, 'b heads c (h w) -> b (heads c) h w',
-                        heads=self.heads, h=h, w=w)
+        out = rearrange(out, 'b heads c (h w) -> b (heads c) h w', heads=self.heads, h=h, w=w)
         return self.to_out(out)
 
 
@@ -180,8 +177,7 @@ class CrossAttention(nn.Module):
         v_in = self.to_v(context)
         del context, x
 
-        q, k, v = map(lambda t: rearrange(
-            t, 'b n (h d) -> (b h) n d', h=h), (q_in, k_in, v_in))
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q_in, k_in, v_in))
         del q_in, k_in, v_in
 
         r1 = torch.zeros(q.shape[0], q.shape[1], v.shape[2], device=q.device)
@@ -205,27 +201,20 @@ class CrossAttention(nn.Module):
             #      f"torch free:{mem_free_torch/gb:0.1f} total:{mem_free_total/gb:0.1f} steps:{steps}")
 
         if steps > 64:
-            max_res = math.floor(
-                math.sqrt(math.sqrt(mem_free_total / 2.5)) / 8) * 64
+            max_res = math.floor(math.sqrt(math.sqrt(mem_free_total / 2.5)) / 8) * 64
             raise RuntimeError(f'Not enough memory, use lower resolution (max approx. {max_res}x{max_res}). '
                                f'Need: {mem_required/64/gb:0.1f}GB free, Have:{mem_free_total/gb:0.1f}GB free')
 
-        slice_size = q.shape[1] // steps if (q.shape[1] %
-                                             steps) == 0 else q.shape[1]
+        slice_size = q.shape[1] // steps if (q.shape[1] % steps) == 0 else q.shape[1]
+        for i in range(0, q.shape[1], slice_size):
+            end = i + slice_size
+            s1 = einsum('b i d, b j d -> b i j', q[:, i:end], k) * self.scale
 
-        try:
-            for i in range(0, q.shape[1], slice_size):
-                end = i + slice_size
-                s1 = einsum('b i d, b j d -> b i j',
-                            q[:, i:end], k) * self.scale
+            s2 = s1.softmax(dim=-1, dtype=q.dtype)
+            del s1
 
-                s2 = s1.softmax(dim=-1, dtype=q.dtype)
-                del s1
-
-                r1[:, i:end] = einsum('b i j, b j d -> b i d', s2, v)
-                del s2
-        except Exception as e:
-            print("TITS AND BEER EXCEPTION (ATTENTION.PY)", e)
+            r1[:, i:end] = einsum('b i j, b j d -> b i d', s2, v)
+            del s2
 
         del q, k, v
 
@@ -238,8 +227,7 @@ class CrossAttention(nn.Module):
 class BasicTransformerBlock(nn.Module):
     def __init__(self, dim, n_heads, d_head, dropout=0., context_dim=None, gated_ff=True, checkpoint=True):
         super().__init__()
-        self.attn1 = CrossAttention(
-            query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout)  # is a self-attention
+        self.attn1 = CrossAttention(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout)  # is a self-attention
         self.ff = FeedForward(dim, dropout=dropout, glu=gated_ff)
         self.attn2 = CrossAttention(query_dim=dim, context_dim=context_dim,
                                     heads=n_heads, dim_head=d_head, dropout=dropout)  # is self-attn if context is none

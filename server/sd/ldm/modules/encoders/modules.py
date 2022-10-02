@@ -7,7 +7,7 @@ from transformers import CLIPTokenizer, CLIPTextModel
 import kornia
 
 # TODO: can we directly rely on lucidrains code and simply add this as a reuirement? --> test
-from ....ldm.modules.x_transformer import Encoder, TransformerWrapper
+from sd.ldm.modules.x_transformer import Encoder, TransformerWrapper
 
 
 class AbstractEncoder(nn.Module):
@@ -87,12 +87,10 @@ class BERTEmbedder(AbstractEncoder):
         super().__init__()
         self.use_tknz_fn = use_tokenizer
         if self.use_tknz_fn:
-            self.tknz_fn = BERTTokenizer(
-                vq_interface=False, max_length=max_seq_len)
+            self.tknz_fn = BERTTokenizer(vq_interface=False, max_length=max_seq_len)
         self.device = device
         self.transformer = TransformerWrapper(num_tokens=vocab_size, max_seq_len=max_seq_len,
-                                              attn_layers=Encoder(
-                                                  dim=n_embed, depth=n_layer),
+                                              attn_layers=Encoder(dim=n_embed, depth=n_layer),
                                               emb_dropout=embedding_dropout)
 
     def forward(self, text):
@@ -119,17 +117,13 @@ class SpatialRescaler(nn.Module):
         super().__init__()
         self.n_stages = n_stages
         assert self.n_stages >= 0
-        assert method in ['nearest', 'linear',
-                          'bilinear', 'trilinear', 'bicubic', 'area']
+        assert method in ['nearest', 'linear', 'bilinear', 'trilinear', 'bicubic', 'area']
         self.multiplier = multiplier
-        self.interpolator = partial(
-            torch.nn.functional.interpolate, mode=method)
+        self.interpolator = partial(torch.nn.functional.interpolate, mode=method)
         self.remap_output = out_channels is not None
         if self.remap_output:
-            print(
-                f'Spatial Rescaler mapping from {in_channels} to {out_channels} channels after resizing.')
-            self.channel_mapper = nn.Conv2d(
-                in_channels, out_channels, 1, bias=bias)
+            print(f'Spatial Rescaler mapping from {in_channels} to {out_channels} channels after resizing.')
+            self.channel_mapper = nn.Conv2d(in_channels, out_channels, 1, bias=bias)
 
     def forward(self, x):
         for stage in range(self.n_stages):
@@ -222,10 +216,8 @@ class FrozenClipImageEmbedder(nn.Module):
 
         self.antialias = antialias
 
-        self.register_buffer('mean', torch.Tensor(
-            [0.48145466, 0.4578275, 0.40821073]), persistent=False)
-        self.register_buffer('std', torch.Tensor(
-            [0.26862954, 0.26130258, 0.27577711]), persistent=False)
+        self.register_buffer('mean', torch.Tensor([0.48145466, 0.4578275, 0.40821073]), persistent=False)
+        self.register_buffer('std', torch.Tensor([0.26862954, 0.26130258, 0.27577711]), persistent=False)
 
     def preprocess(self, x):
         # normalize to [0,1]
@@ -243,6 +235,6 @@ class FrozenClipImageEmbedder(nn.Module):
 
 
 if __name__ == "__main__":
-    from ldm.util import count_params
+    from sd.ldm.util import count_params
     model = FrozenCLIPEmbedder()
     count_params(model, verbose=True)

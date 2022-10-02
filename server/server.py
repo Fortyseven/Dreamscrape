@@ -18,23 +18,22 @@ from flask import Flask, request, make_response
 from flask_cors import CORS
 from flask_colors import init_app
 from urllib.request import urlopen
-
+from rich import print
+import rich
 import common
 import modes
 
 # import profiler
 
-
-# FIXME
-TMP_IMAGE_CACHE_PATH = "/tmp/sdfart"
+TMP_UPLOAD_PATH = "/tmp/dsuploads"
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = TMP_IMAGE_CACHE_PATH
+app.config['UPLOAD_FOLDER'] = TMP_UPLOAD_PATH
 CORS(app)
 
 
-def load_model_from_config(ckpt, verbose=False):
+def load_model_from_config(ckpt, verbose: bool = False):
     print(f"# Loading model from {ckpt}")
 
     pl_sd = torch.load(ckpt, map_location="cpu")
@@ -94,6 +93,7 @@ def init():
 def api_generate():
     src_image = None
     result_paths = []
+    print(request.form)
 
     try:
         if 'src_image' in request.form.keys():
@@ -127,14 +127,15 @@ def api_generate():
                 unet_bs=int(request.form.get("unet_bs", 1)),
                 device=request.form.get("device", "cuda"),
                 seed=request.form.get("seed", ''),
-                turbo=bool(request.form.get("turbo", True)),
-                full_precision=bool(request.form.get("full_precision", False)),
+                # turbo=bool(request.form.get("turbo", True)),
+                turbo=True,
+                # full_precision=bool(request.form.get("full_precision", True)),
+                full_precision=True,
                 strength=float(request.form.get("strength", 0.5)),
                 image=src_image,
                 mask=mask
             )
         else:
-            print("# REQUEST", request.form)
             result_paths = modes.txt2txt.generate(
                 prompt=request.form.get("prompt", ""),
                 ddim_steps=int(request.form.get("ddim_steps", 50)),
@@ -146,17 +147,24 @@ def api_generate():
                 unet_bs=int(request.form.get("unet_bs", 1)),
                 device=request.form.get("device", "cuda"),
                 seed=request.form.get("seed", ''),
-                turbo=bool(request.form.get("turbo", True)),
-                full_precision=bool(request.form.get("full_precision", False)),
+                # turbo=bool(request.form.get("turbo", True)),
+                turbo=True,
+                # full_precision=bool(request.form.get("full_precision", True)),
+                full_precision=True,
                 sampler=request.form.get("sampler", "plms"),
             )
     except Exception as e:
         print("# EXCEPTION!", e)
         print(traceback.print_tb(e.__traceback__))
         torch.cuda.empty_cache()
-        return "Fuck", 500
+        return e.__str__(), 500
 
     return result_paths
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    return "500 error"
 
 
 # logging.set_verbosity_error()

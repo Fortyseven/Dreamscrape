@@ -6,8 +6,8 @@ import torch.nn as nn
 import numpy as np
 from einops import rearrange
 
-from ....ldm.util import instantiate_from_config
-from ....ldm.modules.attention import LinearAttention
+from sd.ldm.util import instantiate_from_config
+from sd.ldm.modules.attention import LinearAttention
 
 
 def get_timestep_embedding(timesteps, embedding_dim):
@@ -56,8 +56,7 @@ class Upsample(nn.Module):
                                         padding=1)
 
     def forward(self, x):
-        x = torch.nn.functional.interpolate(
-            x, scale_factor=2.0, mode="nearest")
+        x = torch.nn.functional.interpolate(x, scale_factor=2.0, mode="nearest")
         if self.with_conv:
             x = self.conv(x)
         return x
@@ -228,25 +227,22 @@ class AttnBlock(nn.Module):
         if mem_required > mem_free_total:
             steps = 2**(math.ceil(math.log(mem_required / mem_free_total, 2)))
 
-        slice_size = q.shape[1] // steps if (q.shape[1] %
-                                             steps) == 0 else q.shape[1]
+        slice_size = q.shape[1] // steps if (q.shape[1] % steps) == 0 else q.shape[1]
         for i in range(0, q.shape[1], slice_size):
             end = i + slice_size
 
-            # b,hw,hw    w[b,i,j]=sum_c q[b,i,c]k[b,c,j]
-            w1 = torch.bmm(q[:, i:end], k)
+            w1 = torch.bmm(q[:, i:end], k)     # b,hw,hw    w[b,i,j]=sum_c q[b,i,c]k[b,c,j]
             w2 = w1 * (int(c)**(-0.5))
             del w1
             w3 = torch.nn.functional.softmax(w2, dim=2, dtype=q.dtype)
             del w2
 
-        # attend to values
+            # attend to values
             v1 = v.reshape(b, c, h*w)
             w4 = w3.permute(0, 2, 1)   # b,hw,hw (first hw of k, second of q)
             del w3
 
-            # b, c,hw (hw of q) h_[b,c,j] = sum_i v[b,c,i] w_[b,i,j]
-            h_[:, :, i:end] = torch.bmm(v1, w4)
+            h_[:, :, i:end] = torch.bmm(v1, w4)     # b, c,hw (hw of q) h_[b,c,j] = sum_i v[b,c,i] w_[b,i,j]
             del v1, w4
 
         h2 = h_.reshape(b, c, h, w)
@@ -261,10 +257,8 @@ class AttnBlock(nn.Module):
 
 
 def make_attn(in_channels, attn_type="vanilla"):
-    assert attn_type in ["vanilla", "linear",
-                         "none"], f'attn_type {attn_type} unknown'
-    print(
-        f"making attention of type '{attn_type}' with {in_channels} in_channels")
+    assert attn_type in ["vanilla", "linear", "none"], f'attn_type {attn_type} unknown'
+    print(f"making attention of type '{attn_type}' with {in_channels} in_channels")
     if attn_type == "vanilla":
         return AttnBlock(in_channels)
     elif attn_type == "none":
@@ -767,8 +761,7 @@ class LatentRescaler(nn.Module):
         x = self.conv_in(x)
         for block in self.res_block1:
             x = block(x, None)
-        x = torch.nn.functional.interpolate(x, size=(
-            int(round(x.shape[2]*self.factor)), int(round(x.shape[3]*self.factor))))
+        x = torch.nn.functional.interpolate(x, size=(int(round(x.shape[2]*self.factor)), int(round(x.shape[3]*self.factor))))
         x = self.attn(x)
         for block in self.res_block2:
             x = block(x, None)
@@ -818,8 +811,7 @@ class Upsampler(nn.Module):
         assert out_size >= in_size
         num_blocks = int(np.log2(out_size//in_size))+1
         factor_up = 1. + (out_size % in_size)
-        print(
-            f"Building {self.__class__.__name__} with in_size: {in_size} --> out_size {out_size} and factor {factor_up}")
+        print(f"Building {self.__class__.__name__} with in_size: {in_size} --> out_size {out_size} and factor {factor_up}")
         self.rescaler = LatentRescaler(factor=factor_up, in_channels=in_channels, mid_channels=2*in_channels,
                                        out_channels=in_channels)
         self.decoder = Decoder(out_ch=out_channels, resolution=out_size, z_channels=in_channels, num_res_blocks=2,
@@ -838,8 +830,7 @@ class Resize(nn.Module):
         self.with_conv = learned
         self.mode = mode
         if self.with_conv:
-            print(
-                f"Note: {self.__class__.__name} uses learned downsampling and will ignore the fixed {mode} mode")
+            print(f"Note: {self.__class__.__name} uses learned downsampling and will ignore the fixed {mode} mode")
             raise NotImplementedError()
             assert in_channels is not None
             # no asymmetric padding in torch conv, must do it ourselves
@@ -853,8 +844,7 @@ class Resize(nn.Module):
         if scale_factor == 1.0:
             return x
         else:
-            x = torch.nn.functional.interpolate(
-                x, mode=self.mode, align_corners=False, scale_factor=scale_factor)
+            x = torch.nn.functional.interpolate(x, mode=self.mode, align_corners=False, scale_factor=scale_factor)
         return x
 
 
@@ -887,8 +877,7 @@ class FirstStagePostProcessor(nn.Module):
         downs = []
         ch_in = n_channels
         for m in ch_mult:
-            blocks.append(ResnetBlock(in_channels=ch_in,
-                          out_channels=m*n_channels, dropout=dropout))
+            blocks.append(ResnetBlock(in_channels=ch_in, out_channels=m*n_channels, dropout=dropout))
             ch_in = m * n_channels
             downs.append(Downsample(ch_in, with_conv=False))
 

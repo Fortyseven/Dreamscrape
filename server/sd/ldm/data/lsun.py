@@ -47,7 +47,7 @@ class LSUNBase(Dataset):
         crop = min(img.shape[0], img.shape[1])
         h, w, = img.shape[0], img.shape[1]
         img = img[(h - crop) // 2:(h + crop) // 2,
-                  (w - crop) // 2:(w + crop) // 2]
+              (w - crop) // 2:(w + crop) // 2]
 
         image = Image.fromarray(img)
         if self.size is not None:

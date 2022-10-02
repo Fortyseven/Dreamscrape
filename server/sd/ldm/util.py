@@ -5,6 +5,7 @@ import numpy as np
 from collections import abc
 from einops import rearrange
 from functools import partial
+from rich import print
 
 import multiprocessing as mp
 from threading import Thread

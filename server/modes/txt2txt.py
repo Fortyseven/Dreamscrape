@@ -1,5 +1,7 @@
 import time
 import torch
+import rich
+from rich import print
 
 from torch import autocast
 from pytorch_lightning import seed_everything
@@ -45,6 +47,7 @@ def generate(
     seed_everything(seed)
 
     if device != "cpu" and full_precision == False:
+        print("XXX#### ASSMOINKJEYHFJEIF  ##############")
         common.model.half()
         common.modelFS.half()
         common.modelCS.half()
@@ -80,8 +83,8 @@ def generate(
                     prompts = list(prompts)
 
                 subprompts, weights = split_weighted_subprompts(prompts[0])
-                print("# subprompts:", subprompts)
-                print("# weights:", weights)
+                print("# subprompts:", (subprompts, weights))
+                # print("# weights:", weights)
 
                 if len(subprompts) > 1:
                     c = torch.zeros_like(uc)

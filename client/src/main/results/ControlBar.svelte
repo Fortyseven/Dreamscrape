@@ -1,6 +1,6 @@
 <script>
     import { Button, ButtonGroup, Icon } from "sveltestrap";
-    import { createBookmark } from "../api/bookmarks";
+    // import { createBookmark } from "../api";
     import {
         prompt,
         ddim_steps,
@@ -35,7 +35,7 @@
 
     /* ----------------------------------------------*/
     function onCreateBookmark() {
-        createBookmark($gen_results[$result_selected]);
+        // createBookmark($gen_results[$result_selected]);
     }
 
     /* ----------------------------------------------*/
@@ -47,7 +47,11 @@
         $height = $gen_results[$result_selected].height;
         $scale = $gen_results[$result_selected].scale;
         $ddim_eta = $gen_results[$result_selected].ddim_eta;
-        $strength = $gen_results[$result_selected].strength;
+        // if (!isNaN($gen_results[$result_selected])) {
+        //     $strength = $gen_results[$result_selected].strength;
+        // } else {
+        //     $strength = 0.5;
+        // }
 
         $batch_size = 1;
     }

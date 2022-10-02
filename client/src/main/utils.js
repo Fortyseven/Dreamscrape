@@ -11,7 +11,7 @@ import {
   gen_results,
   is_loading,
   resetStore,
-  init_image,
+  src_image,
   strength,
   result_selected,
   snd_error,

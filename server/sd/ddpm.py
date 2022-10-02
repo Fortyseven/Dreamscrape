@@ -7,6 +7,7 @@ https://github.com/CompVis/taming-transformers
 """
 
 # import time
+from rich import print
 import math
 from tqdm.auto import trange, tqdm
 import torch
@@ -23,7 +24,7 @@ from .ldm.util import exists, default, instantiate_from_config
 from .ldm.modules.diffusionmodules.util import make_beta_schedule
 from .ldm.modules.diffusionmodules.util import make_ddim_sampling_parameters, make_ddim_timesteps, noise_like
 from .ldm.modules.diffusionmodules.util import make_beta_schedule, extract_into_tensor, noise_like
-# from samplers import CompVisDenoiser
+import k_diffusion as K
 
 
 def disabled_train(self):
@@ -543,11 +544,12 @@ class UNet(DDPM):
                                          unconditional_conditioning=unconditional_conditioning,
                                          mask=mask, init_latent=x_T, use_original_steps=False)
 
-        # elif sampler == "euler":
-        #     cvd = CompVisDenoiser(self.alphas_cumprod)
-        #     sig = cvd.get_sigmas(S)
-        #     samples = self.heun_sampling(noise, sig, conditioning, unconditional_conditioning=unconditional_conditioning,
-        #                                 unconditional_guidance_scale=unconditional_guidance_scale)
+        elif sampler == "euler":
+            # cvd = K.external.CompVisDenoiser(self.alphas_cumprod)
+            cvd = K.external.OpenAIDenoiser(self.model1,  device="cpu")
+            sig = cvd.get_sigmas(S)
+            samples = self.heun_sampling(noise, sig, conditioning, unconditional_conditioning=unconditional_conditioning,
+                                         unconditional_guidance_scale=unconditional_guidance_scale)
 
         if (self.turbo):
             self.model1.to("cpu")

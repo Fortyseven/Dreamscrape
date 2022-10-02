@@ -1,7 +1,7 @@
 import os
 import re
 import pandas as pd
-
+from rich import print
 
 # def split_weighted_subprompts(text):
 #     prompts = []
@@ -67,8 +67,6 @@ def split_weighted_subprompts(text):
                 prompts.append(text)
                 weights.append(1.0)
             remaining = 0
-
-    print("XXX", prompts, weights, "YYY")
     return prompts, weights
 
 
