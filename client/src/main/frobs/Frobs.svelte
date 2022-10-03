@@ -12,6 +12,8 @@
         turbo,
         defaults,
     } from "../store";
+
+    import AspectRatioSelector from "./AspectRatioSelector.svelte";
 </script>
 
 <div>
@@ -75,6 +77,9 @@
                     step={64}
                     bind:value={$height}
                 />
+            </Col>
+            <Col xs="auto" style="padding-right: 0">
+                <AspectRatioSelector />
             </Col>
         </Row>
         <Row>
