@@ -10,3 +10,5 @@ server/sd/models/
 __pycache__
 .vscode
 *.orig
+temp/
+*old/
