@@ -78,38 +78,24 @@
         </Row>
     {/if}
 </div>
-<I2ICanvas />
-
-<!-- <img
-    class:invisible_preview={$src_image === undefined}
-    id="PreviewImage"
-    src={$src_image}
-/>
+<!-- <I2ICanvas /> -->
 
 <img
-    class:invisible_preview={$mask_image === undefined}
-    id="MaskImage"
-    src={$mask_image}
-/> -->
+    class:invisible_preview={$src_image === null}
+    id="PreviewImage"
+    src={$src_image}
+    alt=""
+/>
+
 <style>
-    /* img {
-        max-width: 100%;
+    #PreviewImage {
+        width: 512px;
+        aspect-ratio: 1/1;
         margin-top: 1em;
         background: #f0f;
         box-shadow: 0.25rem 0.25rem 1rem black;
-    } */
+    }
     .invisible_preview {
         visibility: hidden;
     }
-
-    /* .value {
-        font-family: monospace;
-        color: blue;
-        float: right;
-    }
-
-    :global(.form-label) {
-        display: block !important;
-        margin-top: 1em;
-    } */
 </style>
