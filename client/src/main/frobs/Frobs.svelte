@@ -58,7 +58,7 @@
                     type="range"
                     name="width"
                     id="width"
-                    min={128}
+                    min={384}
                     max={1024}
                     step={64}
                     bind:value={$width}
@@ -72,7 +72,7 @@
                     type="range"
                     name="height"
                     id="height"
-                    min={128}
+                    min={384}
                     max={1024}
                     step={64}
                     bind:value={$height}
