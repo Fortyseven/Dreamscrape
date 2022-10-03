@@ -3,7 +3,6 @@
 
     import { FormGroup, Input } from "sveltestrap";
     import { seed, prompt, is_loading } from "../store";
-    import WaitingBar from "../ui/WaitingBar.svelte";
 
     const dispatch = createEventDispatcher();
     let inner;
