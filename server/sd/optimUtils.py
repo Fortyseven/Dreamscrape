@@ -1,7 +1,7 @@
 import os
 import re
 import pandas as pd
-from rich import print
+from common import console
 
 # def split_weighted_subprompts(text):
 #     prompts = []
@@ -50,7 +50,7 @@ def split_weighted_subprompts(text):
                 try:
                     weight = float(text[:idx])
                 except:  # couldn't treat as float
-                    print(
+                    console.log(
                         f"Warning: '{text[:idx]}' is not a value, are you missing a space?")
                     weight = 1.0
             else:  # no value found

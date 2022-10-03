@@ -18,19 +18,20 @@ from urllib.request import urlopen
 
 
 import common
+from common import console
 
 
 def load_img(image, h0, w0):
     image = image.convert("RGB")
     w, h = image.size
-    print(f"# Loaded input image of size ({w}, {h})")
+    console.log(f"Loaded input image of size ({w}, {h})")
     if h0 is not None and w0 is not None:
         h, w = h0, w0
 
     # resize to integer multiple of 32
     w, h = map(lambda x: x - x % 64, (w, h))
 
-    print(f"# New image size ({w}, {h})")
+    console.log(f"New image size ({w}, {h})")
     image = image.resize((w, h), resample=Image.LANCZOS)
     image = np.array(image).astype(np.float32) / 255.0
     image = image[None].transpose(0, 3, 1, 2)
@@ -41,19 +42,19 @@ def load_img(image, h0, w0):
 def load_mask(mask, h0, w0, invert=False):
     image = mask.convert("RGB")
     w, h = image.size
-    print(f"loaded input image of size ({w}, {h})")
+    console.log(f"Loaded input image of size ({w}, {h})")
     if(h0 is not None and w0 is not None):
         h, w = h0, w0
 
     # resize to integer multiple of 32
     w, h = map(lambda x: x - x % 64, (w, h))
 
-    print(f"New image size ({w}, {h})")
+    console.log(f"New image size ({w}, {h})")
     image = image.resize((64, 64), resample=Image.LANCZOS)
     image = np.array(image)
 
     if invert:
-        print("inverted")
+        console.log("Inverted")
         where_0, where_1 = np.where(image == 0), np.where(image == 255)
         image[where_0], image[where_1] = 255, 0
     image = image.astype(np.float32)/255.0

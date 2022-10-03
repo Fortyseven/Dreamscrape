@@ -19,8 +19,8 @@ from flask_cors import CORS
 from flask_colors import init_app
 from urllib.request import urlopen
 from rich import print
-import rich
 import common
+from common import console
 import modes
 
 # import profiler
@@ -34,12 +34,12 @@ CORS(app)
 
 
 def load_model_from_config(ckpt, verbose: bool = False):
-    print(f"# Loading model from {ckpt}")
+    console.log(f"Loading model from {ckpt}")
 
     pl_sd = torch.load(ckpt, map_location="cpu")
 
     if "global_step" in pl_sd:
-        print(f"# Global Step: {pl_sd['global_step']}")
+        console.log(f"Global Step: {pl_sd['global_step']}")
 
     sd = pl_sd["state_dict"]
 
@@ -47,6 +47,7 @@ def load_model_from_config(ckpt, verbose: bool = False):
 
 
 def init():
+    console.log("Initializing")
     config = "sd/v1-inference.yaml"
     ckpt = "sd/models/ldm/stable-diffusion-v1/model.ckpt"
 
@@ -93,7 +94,7 @@ def init():
 def api_generate():
     src_image = None
     result_paths = []
-    print(request.form)
+    # print(request.form)
 
     try:
         if 'src_image' in request.form.keys():
@@ -107,13 +108,13 @@ def api_generate():
             mask_image_data = None
 
             if request.form.get('mask_image'):
-                print("HAS MASK!")
+                console.log("HAS MASK!")
                 with urlopen(request.form.get('mask_image')) as imgdata:
                     mask_image_data = imgdata.read()
                     mask = Image.open(io.BytesIO(mask_image_data))
             else:
                 mask = None
-                print("NO MASK")
+                console.log("NO MASK")
 
             # mask = modes.modes.shared.load_mask(mask_img)
             result_paths = modes.inpaint.generate(
@@ -154,8 +155,8 @@ def api_generate():
                 sampler=request.form.get("sampler", "plms"),
             )
     except Exception as e:
-        print("# EXCEPTION!", e)
-        print(traceback.print_tb(e.__traceback__))
+        console.log("EXCEPTION!", e)
+        console.log(traceback.print_tb(e.__traceback__))
         torch.cuda.empty_cache()
         return e.__str__(), 500
 

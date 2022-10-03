@@ -9,7 +9,6 @@ import common
 
 
 def getBookmarks():
-
     sql = "SELECT * FROM bookmarks ORDER BY id DESC"
 
     common.db.row_factory = sqlite3.Row

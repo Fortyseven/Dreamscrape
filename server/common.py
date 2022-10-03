@@ -1,4 +1,6 @@
 import sqlite3
+import rich
+from rich import console
 
 model = None
 modelCS = None
@@ -6,12 +8,14 @@ modelFS = None
 
 db = None
 
+console = console.Console()
+
 
 def init():
-    global db
+    global db, console
 
     try:
         db = sqlite3.connect("db/sd.db", check_same_thread=False)
-        print("DB", db)
+
     except Exception as e:
         print("DB EXCEPT", e)

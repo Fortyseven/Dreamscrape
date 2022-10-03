@@ -10,6 +10,7 @@ from sd.optimUtils import split_weighted_subprompts
 
 from modes.shared import save_images, load_img
 import common
+from common import console
 
 
 def generate(
@@ -28,7 +29,7 @@ def generate(
     strength,
     image
 ):
-    print("############################################generate_img2img")
+    console.log("############################################generate_img2img")
 
     if seed == "":
         seed = randint(0, 1000000)
@@ -72,7 +73,7 @@ def generate(
 
     t_enc = int(strength * ddim_steps)
 
-    print(f"# target t_enc is {t_enc} steps")
+    console.log(f"target t_enc is {t_enc} steps")
 
     if full_precision == False and device != "cpu":
         precision_scope = autocast
@@ -84,8 +85,6 @@ def generate(
     with torch.no_grad():
         all_samples = list()
         for prompts in data:
-            print("# prompts", prompts)
-
             with precision_scope("cuda"):
                 common.modelCS.to(device)
 
@@ -99,6 +98,7 @@ def generate(
                     prompts = list(prompts)
 
                 subprompts, weights = split_weighted_subprompts(prompts[0])
+                console.log("Subprompts:", (subprompts, weights))
 
                 if len(subprompts) > 1:
                     c = torch.zeros_like(uc)
@@ -138,7 +138,7 @@ def generate(
                 )
 
                 common.modelFS.to(device)
-                print("# saving images")
+                console.log("Saving images...")
 
                 results = save_images(
                     seed,

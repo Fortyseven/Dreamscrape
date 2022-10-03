@@ -12,6 +12,7 @@ from sd.optimUtils import split_weighted_subprompts
 
 from modes.shared import save_images
 import common
+from common import console
 
 
 def generate(
@@ -29,7 +30,7 @@ def generate(
     full_precision,
     sampler,
 ):
-    print("############################################generate_txt2txt")
+    console.log("############################################generate_txt2txt")
     C = 4
     f = 8
 
@@ -47,7 +48,7 @@ def generate(
     seed_everything(seed)
 
     if device != "cpu" and full_precision == False:
-        print("XXX#### ASSMOINKJEYHFJEIF  ##############")
+        console.log("XXX#### ASSMOINKJEYHFJEIF  ##############")
         common.model.half()
         common.modelFS.half()
         common.modelCS.half()
@@ -83,7 +84,7 @@ def generate(
                     prompts = list(prompts)
 
                 subprompts, weights = split_weighted_subprompts(prompts[0])
-                print("# subprompts:", (subprompts, weights))
+                console.log("Subprompts:", (subprompts, weights))
                 # print("# weights:", weights)
 
                 if len(subprompts) > 1:
@@ -122,7 +123,7 @@ def generate(
 
                 common.modelFS.to(device)
 
-                print("# Saving images...")
+                console.log("Saving images...")
 
                 results = save_images(
                     seed,
