@@ -1,25 +1,24 @@
 import { writable } from "svelte/store";
 
 export const defaults = {
-  prompt: "",
-  //   ddim_steps: 40,
-  //   batch_size: 4,
-  ddim_steps: 35,
-  batch_size: 1,
-  width: 512,
-  height: 512,
-  scale: 7.5,
-  ddim_eta: 0.1,
-  seed: "",
-  turbo: true,
-  full_precision: true,
-  sampler: "plms",
-  do_upscale: true,
-  strength: 0.5,
-  result_selected: 0,
+    prompt: "",
+    prompt_extra: "",
+    ddim_steps: 35,
+    batch_size: 2,
+    width: 512,
+    height: 512,
+    scale: 7.5,
+    ddim_eta: 0.1,
+    seed: "",
+    full_precision: true,
+    sampler: "plms",
+    do_upscale: true,
+    strength: 0.5,
+    result_selected: 0,
 };
 
 export const prompt = writable(defaults.prompt);
+export const prompt_extra = writable(defaults.prompt_extra);
 export const ddim_steps = writable(defaults.ddim_steps);
 export const batch_size = writable(defaults.batch_size);
 export const width = writable(defaults.width);
@@ -44,31 +43,35 @@ export const bookmarks = writable([]);
 export const api = writable(null);
 
 /* ----------------------------------------------*/
-export function resetStore() {
-  prompt.set(defaults.prompt);
-  ddim_steps.set(defaults.ddim_steps);
-  batch_size.set(defaults.batch_size);
-  width.set(defaults.width);
-  height.set(defaults.height);
-  scale.set(defaults.scale);
-  ddim_eta.set(defaults.ddim_eta);
-  seed.set(defaults.seed);
-  turbo.set(defaults.turbo);
-  full_precision.set(defaults.full_precision);
-  sampler.set(defaults.sampler);
-  do_upscale.set(defaults.do_upscale);
-  strength.set(defaults.strength);
-  result_selected.set(0);
+export function resetStore(ev) {
+    prompt.set(defaults.prompt);
 
-  is_loading.set(false);
+    if (ev && ev.shiftKey) {
+        prompt_extra.set(defaults.prompt_extra);
+    }
 
-  gen_results.set([]);
-  window.sessionStorage.clear();
+    ddim_steps.set(defaults.ddim_steps);
+    batch_size.set(defaults.batch_size);
+    width.set(defaults.width);
+    height.set(defaults.height);
+    scale.set(defaults.scale);
+    ddim_eta.set(defaults.ddim_eta);
+    seed.set(defaults.seed);
+    full_precision.set(defaults.full_precision);
+    sampler.set(defaults.sampler);
+    do_upscale.set(defaults.do_upscale);
+    strength.set(defaults.strength);
+    result_selected.set(0);
+
+    is_loading.set(false);
+
+    gen_results.set([]);
+    window.sessionStorage.clear();
 }
 
 export function resetImages() {
-  src_image.set(null);
-//   mask_image.set(undefined);
+    src_image.set(null);
+    //   mask_image.set(undefined);
 }
 
 let snd_error_audio = undefined;
@@ -76,19 +79,19 @@ let snd_finished_audio = undefined;
 
 /* ----------------------------------------------*/
 export function snd_error() {
-  if (!snd_error_audio) {
-    snd_error_audio = new Audio("/media/error.wav");
-    return;
-  }
-  snd_error_audio.play();
+    if (!snd_error_audio) {
+        snd_error_audio = new Audio("/media/error.wav");
+        return;
+    }
+    snd_error_audio.play();
 }
 
 /* ----------------------------------------------*/
 export function snd_finished() {
-  if (!snd_finished_audio) {
-    snd_finished_audio = new Audio("/media/finished.wav");
-    return;
-  }
-  snd_finished_audio.play();
+    if (!snd_finished_audio) {
+        snd_finished_audio = new Audio("/media/finished.wav");
+        return;
+    }
+    snd_finished_audio.play();
 }
 

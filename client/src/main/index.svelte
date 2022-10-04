@@ -2,6 +2,7 @@
     // @ts-nocheck
     import {
         prompt,
+        prompt_extra,
         ddim_steps,
         batch_size,
         height,
@@ -64,6 +65,10 @@
             // sampler: "ddim",
         };
 
+        if ($prompt_extra.length > 0) {
+            values.prompt = [$prompt, $prompt_extra].join(", ");
+        }
+
         const fd = new FormData();
 
         if ($src_image !== null) {
@@ -124,8 +129,8 @@
     }
 
     /* -------------------- */
-    function btnReset() {
-        resetStore();
+    function btnReset(ev) {
+        resetStore(ev);
     }
 
     let open = false;
