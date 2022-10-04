@@ -1,6 +1,6 @@
 <script>
     import { Button, ButtonGroup, Icon } from "sveltestrap";
-    // import { createBookmark } from "../api";
+    import * as api from "../api";
     import {
         prompt,
         ddim_steps,
@@ -35,7 +35,7 @@
 
     /* ----------------------------------------------*/
     function onCreateBookmark() {
-        // createBookmark($gen_results[$result_selected]);
+        api.bookmarks.create($gen_results[$result_selected]);
     }
 
     /* ----------------------------------------------*/

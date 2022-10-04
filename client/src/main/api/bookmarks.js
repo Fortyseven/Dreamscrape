@@ -20,7 +20,7 @@ export async function create(entry) {
     i[0] !== "image" ? i : null
   );
 
-  const response = await api({
+  const response = await window.api({
     url: "bookmark",
     method: "post",
     data: entry,
@@ -32,7 +32,7 @@ export async function create(entry) {
 /* ----------------------------------------------*/
 export async function rm(id) {
   if (confirm("Delete this bookmark?")) {
-    const response = await api({
+    const response = await window.api({
       url: "/bookmark",
       method: "delete",
       data: { id },
