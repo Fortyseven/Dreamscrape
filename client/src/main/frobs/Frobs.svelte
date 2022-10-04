@@ -9,7 +9,6 @@
         scale,
         ddim_eta,
         do_upscale,
-        turbo,
         defaults,
     } from "../store";
 
@@ -115,30 +114,22 @@
         <option>plms</option>
       </Input>
     </Row> -->
-        <br />
-        <Row>
-            <Input
-                label="Turbo"
-                type="switch"
-                name="turbo"
-                id="turbo"
-                bind:checked={$turbo}
-            />
-            <Input
+        <!-- <Row> -->
+        <!-- <Input
                 label="Do Upscale"
                 type="switch"
                 name="do_upscale"
                 id="do_upscale"
                 bind:checked={$do_upscale}
-            />
-            <!-- <Input
+            /> -->
+        <!-- <Input
         label="use ddim sampler"
         type="switch"
         name="sampler_useddim"
         id="sampler_useddim"
         bind:checked={sampler_useddim}
       /> -->
-        </Row>
+        <!-- </Row> -->
     </Col>
 </div>
 

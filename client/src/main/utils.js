@@ -7,7 +7,6 @@ import {
   scale,
   ddim_eta,
   seed,
-  turbo,
   gen_results,
   is_loading,
   resetStore,

@@ -19,24 +19,6 @@ export const defaults = {
   result_selected: 0,
 };
 
-
-// TODO:
-// export const frobs = writable({
-//     prompt : defaults.prompt,
-//     ddim_steps : defaults.ddim_steps,
-//     batch_size : defaults.batch_size,
-//     width : defaults.width,
-//     height : defaults.height,
-//     scale : defaults.scale,
-//     ddim_eta : defaults.ddim_eta,
-//     seed : defaults.seed,
-//     turbo : defaults.turbo,
-//     full_precision : defaults.full_precision,
-//     sampler : defaults.sampler,
-//     do_upscale : defaults.do_upscale,
-//     strength : defaults.strength,
-// });
-
 export const prompt = writable(defaults.prompt);
 export const ddim_steps = writable(defaults.ddim_steps);
 export const batch_size = writable(defaults.batch_size);
@@ -45,7 +27,6 @@ export const height = writable(defaults.height);
 export const scale = writable(defaults.scale);
 export const ddim_eta = writable(defaults.ddim_eta);
 export const seed = writable(defaults.seed);
-export const turbo = writable(defaults.turbo);
 export const full_precision = writable(defaults.full_precision);
 export const sampler = writable(defaults.sampler);
 export const do_upscale = writable(defaults.do_upscale);

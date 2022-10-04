@@ -9,7 +9,6 @@
         scale,
         ddim_eta,
         seed,
-        turbo,
         full_precision,
         gen_results,
         is_loading,
@@ -59,10 +58,10 @@
             scale: $scale,
             ddim_eta: $ddim_eta,
             seed: $seed,
-            turbo: !!$turbo,
             full_precision: $full_precision,
             strength: $strength,
             sampler: "plms",
+            // sampler: "ddim",
         };
 
         const fd = new FormData();
