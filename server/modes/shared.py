@@ -101,11 +101,11 @@ def save_images(seed, prompt, ddim_steps, ddim_eta, sampler,
 
         # img.save(save_name)
 
-        jpg_bytes = io.BytesIO()
+        png_bytes = io.BytesIO()
         thumb_bytes = io.BytesIO()
 
-        # img.save(png_bytes, format="PNG")
-        img.save(jpg_bytes, format="jpeg", quality=97, subsampling=0)
+        img.save(png_bytes, format="PNG")
+        # img.save(jpg_bytes, format="jpeg", quality=97, subsampling=0)
         img = img.resize((64, 64))
         img.save(thumb_bytes, format="jpeg", quality=95)
 
@@ -119,7 +119,7 @@ def save_images(seed, prompt, ddim_steps, ddim_eta, sampler,
             "width": width,
             "height": height,
             "prompt": prompt,
-            "image": base64.b64encode(jpg_bytes.getvalue()).decode(),
+            "image": base64.b64encode(png_bytes.getvalue()).decode(),
             "thumbnail": base64.b64encode(thumb_bytes.getvalue()).decode()
         })
 
@@ -127,7 +127,7 @@ def save_images(seed, prompt, ddim_steps, ddim_eta, sampler,
         # base_count += 1
 
         del img
-        del jpg_bytes
+        del png_bytes
         del x_sample
         del x_samples_ddim
 
