@@ -3,6 +3,7 @@
 
     import { Col, FormGroup, Input, Row } from "sveltestrap";
     import { seed, prompt, prompt_extra, is_loading } from "../store";
+    import StyleBar from "./StyleBar.svelte";
 
     const dispatch = createEventDispatcher();
     let inner;
@@ -49,5 +50,10 @@
                 on:keydown={onPromptKeydown}
             />
         </FormGroup>
+    </Col>
+</Row>
+<Row>
+    <Col>
+        <StyleBar />
     </Col>
 </Row>
