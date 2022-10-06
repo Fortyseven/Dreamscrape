@@ -1,5 +1,5 @@
 <script>
-    import { Col, Input, Label, Row } from "sveltestrap";
+    import { Button, Col, Input, Label, Row } from "sveltestrap";
 
     import {
         ddim_steps,
@@ -13,6 +13,17 @@
     } from "../store";
 
     import AspectRatioSelector from "./AspectRatioSelector.svelte";
+
+    function swapDimensions(ev) {
+        if (ev && ev.shiftKey) {
+            $width = 512;
+            $height = 512;
+        } else {
+            $width ^= $height;
+            $height ^= $width;
+            $width ^= $height;
+        }
+    }
 </script>
 
 <div>
@@ -62,6 +73,9 @@
                     step={64}
                     bind:value={$width}
                 />
+            </Col>
+            <Col xs="auto" style="padding-right: 0">
+                <Button on:click={swapDimensions}>↔</Button>
             </Col>
             <Col style="padding-right: 0">
                 <Label for="height">
