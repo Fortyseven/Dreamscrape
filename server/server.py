@@ -174,6 +174,8 @@ common.init()
 init_app(app)
 
 
+app.add_url_rule('/media', view_func=media.getImage,
+                 methods=["GET"])
 app.add_url_rule('/bookmark', view_func=bookmark.getBookmarks,
                  methods=["GET"])
 app.add_url_rule('/bookmark', view_func=bookmark.saveBookmark,

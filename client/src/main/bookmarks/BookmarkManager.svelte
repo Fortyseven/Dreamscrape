@@ -30,6 +30,8 @@
                         <th>Steps</th>
                         <th>Scale</th>
                         <th>Strength</th>
+                        <th>Src</th>
+                        <th>Image</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,9 +43,26 @@
                             <td>{entry.scale}</td>
                             <td>{entry.strength || "--"}</td>
                             <td>
-                                <img
-                                    src="data:image/jpeg;base64,{entry.thumbnail}"
-                                />
+                                {#if entry.src_hash}
+                                    <a
+                                        href="http://localhost:5000/media?hash={entry.src_hash}"
+                                        target="_blank"
+                                    >
+                                        <img
+                                            src="http://localhost:5000/media?hash={entry.src_hash}&thumb=1"
+                                        />
+                                    </a>
+                                {/if}
+                            </td>
+                            <td>
+                                <a
+                                    href="http://localhost:5000/media?hash={entry.img_hash}"
+                                    target="_blank"
+                                >
+                                    <img
+                                        src="http://localhost:5000/media?hash={entry.img_hash}&thumb=1"
+                                    />
+                                </a>
                             </td>
                             <td>
                                 <ButtonGroup>

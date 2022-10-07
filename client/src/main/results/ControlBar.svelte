@@ -2,17 +2,18 @@
     import { Button, ButtonGroup, Icon } from "sveltestrap";
     import * as api from "../api";
     import {
-        prompt,
-        ddim_steps,
         batch_size,
-        height,
-        width,
-        scale,
         ddim_eta,
-        seed,
+        ddim_steps,
         gen_results,
+        height,
+        prompt,
         result_selected,
+        scale,
+        seed,
+        src_image,
         strength,
+        width,
     } from "../store";
 
     /* ----------------------------------------------*/
@@ -35,7 +36,18 @@
 
     /* ----------------------------------------------*/
     function onCreateBookmark() {
-        api.bookmarks.create($gen_results[$result_selected]);
+        const data = {
+            ...$gen_results[$result_selected],
+            strength: $strength,
+        };
+
+        if ($src_image) {
+            data["src_image"] = $src_image;
+        }
+
+        delete data["thumbnail"];
+
+        api.bookmarks.create(data);
     }
 
     /* ----------------------------------------------*/
