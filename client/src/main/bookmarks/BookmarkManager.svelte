@@ -1,9 +1,9 @@
 <script>
     import { onMount } from "svelte";
     import { Button, ButtonGroup, Icon, Table } from "sveltestrap";
-    import { promoteBookmarkToSession } from "../utils";
-    import { bookmarks } from "../store";
     import * as api from "../api";
+    import { bookmarks } from "../store";
+    import { promoteBookmarkToSession } from "../utils";
 
     const LIST_MODE = 0;
     const GRID_MODE = 1;
