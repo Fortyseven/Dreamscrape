@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 
-import traceback
-import bookmark
 import io
 import mimetypes
-import torch
-
-from torch import autocast
+import traceback
 from contextlib import nullcontext
+from random import randint
+from urllib.request import urlopen
+
+import torch
+from flask import Flask, make_response, request
+from flask_cors import CORS
 from omegaconf import OmegaConf
 from PIL import Image
-from random import randint
-
-from sd.ldm.util import instantiate_from_config
-
-from flask import Flask, request, make_response
-from flask_cors import CORS
-from flask_colors import init_app
-from urllib.request import urlopen
 from rich import print
+from torch import autocast
+
+import bookmark
 import common
-from common import console
+import media
 import modes
+from common import console
+from flask_colors import init_app
+from sd.ldm.util import instantiate_from_config
 
 # import profiler
 
@@ -46,7 +46,7 @@ def load_model_from_config(ckpt, verbose: bool = False):
     return sd
 
 
-def init():
+def initSD():
     console.log("Initializing")
     config = "sd/v1-inference.yaml"
     ckpt = "sd/models/ldm/stable-diffusion-v1/model.ckpt"
@@ -183,4 +183,4 @@ app.add_url_rule('/bookmark', view_func=bookmark.saveBookmark,
 app.add_url_rule('/bookmark', view_func=bookmark.deleteBookmark,
                  methods=["DELETE"])
 
-init()
+initSD()

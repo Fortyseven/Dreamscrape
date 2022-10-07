@@ -1,24 +1,20 @@
 import base64
 import io
+from contextlib import nullcontext
+from random import randint
+from urllib.request import urlopen
+
+import common
 import numpy as np
 import torch
-
-from torch import autocast
-from pytorch_lightning import seed_everything
-from contextlib import nullcontext
+from common import console
 from einops import rearrange, repeat
 from omegaconf import OmegaConf
 from PIL import Image
-from random import randint
-
+from pytorch_lightning import seed_everything
 from sd.ldm.util import instantiate_from_config
 from sd.optimUtils import split_weighted_subprompts
-
-from urllib.request import urlopen
-
-
-import common
-from common import console
+from torch import autocast
 
 
 def load_img(image, h0, w0):
