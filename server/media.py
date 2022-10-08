@@ -23,9 +23,17 @@ def getImage():
         })
 
     else:
+        width: float = 64
+
+        if 'width' in request.args:
+            width = int(request.args['width'])
+
         thumb_bytes = io.BytesIO()
         i = Image.open(io.BytesIO(img))
-        i = i.resize([64, 64], resample=Image.LANCZOS)
+
+        nh = int(width * (i.height/i.width))
+        i = i.resize([width, nh],
+                     resample=Image.LANCZOS)
         i.save(thumb_bytes, format="jpeg", quality=95)
 
         return (
