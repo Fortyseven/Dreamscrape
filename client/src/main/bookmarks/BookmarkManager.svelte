@@ -1,105 +1,63 @@
 <script>
     import { onMount } from "svelte";
-    import { Button, ButtonGroup, Icon, Table } from "sveltestrap";
+    import {
+        Button,
+        ButtonGroup,
+        Col,
+        Container,
+        Icon,
+        Row,
+        Table,
+        Tooltip,
+    } from "sveltestrap";
     import * as api from "../api";
     import { bookmarks } from "../store";
     import { promoteBookmarkToSession } from "../utils";
+    import BookmarkTable from "./BookmarkTable.svelte";
+    import GalleryEntry from "./GalleryEntry.svelte";
 
     const LIST_MODE = 0;
     const GRID_MODE = 1;
 
-    let view_mode = LIST_MODE;
+    let view_mode = GRID_MODE;
 
     /* -------------------------------------- */
     onMount(async () => {
         await api.bookmarks.reload();
     });
+
+    const toggleGrid = () => {
+        view_mode = view_mode == GRID_MODE ? LIST_MODE : GRID_MODE;
+    };
 </script>
 
-<div style="float:right">
-    <Button on:click={api.bookmarks.reload}>Reload</Button>
-</div>
-{#if bookmarks}
-    {#if view_mode === LIST_MODE}
-        <div id="BookmarkTable">
-            <Table striped hover>
-                <thead>
-                    <tr>
-                        <th>Seed</th>
-                        <th>Prompt</th>
-                        <th>Steps</th>
-                        <th>Scale</th>
-                        <th>Strength</th>
-                        <th>Src</th>
-                        <th>Image</th>
-                    </tr>
-                </thead>
-                <tbody>
+<Container>
+    <Row>
+        <Col>
+            <div style="float:right;margin-top:1rem">
+                <Button on:click={toggleGrid}>Toggle View</Button>
+                <Button on:click={api.bookmarks.reload}>Reload</Button>
+            </div>
+        </Col>
+    </Row>
+    {#if bookmarks}
+        <Row>
+            {#if view_mode === LIST_MODE}
+                <BookmarkTable />
+            {:else}
+                <div id="BookmarkGallery">
                     {#each $bookmarks as entry, i}
-                        <tr>
-                            <th scope="row">{entry.seed}</th>
-                            <td>{entry.prompt}</td>
-                            <td>{entry.ddim_steps}</td>
-                            <td>{entry.scale}</td>
-                            <td>{entry.strength || "--"}</td>
-                            <td>
-                                {#if entry.src_hash}
-                                    <a
-                                        href="http://localhost:5000/media?hash={entry.src_hash}"
-                                        target="_blank"
-                                    >
-                                        <img
-                                            src="http://localhost:5000/media?hash={entry.src_hash}&thumb=1"
-                                        />
-                                    </a>
-                                {/if}
-                            </td>
-                            <td>
-                                <a
-                                    href="http://localhost:5000/media?hash={entry.img_hash}"
-                                    target="_blank"
-                                >
-                                    <img
-                                        src="http://localhost:5000/media?hash={entry.img_hash}&thumb=1"
-                                    />
-                                </a>
-                            </td>
-                            <td>
-                                <ButtonGroup>
-                                    <Button
-                                        on:click={() =>
-                                            promoteBookmarkToSession(entry)}
-                                    >
-                                        <Icon
-                                            title="Load Generation Data"
-                                            name="box-arrow-in-up-left"
-                                        />
-                                    </Button>
-                                    <Button
-                                        on:click={async () => {
-                                            await api.bookmarks.rm(entry.id);
-                                            await api.bookmarks.reload();
-                                        }}
-                                        color="danger"
-                                    >
-                                        <Icon
-                                            title="Delete Bookmark"
-                                            name="trash"
-                                        />
-                                    </Button>
-                                </ButtonGroup>
-                            </td>
-                        </tr>
+                        <GalleryEntry {entry} />
                     {/each}
-                </tbody>
-            </Table>
-        </div>
+                </div>
+            {/if}
+        </Row>
     {/if}
-{/if}
+</Container>
 
 <style>
-    #BookmarkTable {
-        height: 50vh;
-        overflow: scroll;
+    #BookmarkGallery {
+        display: flex;
+        flex-wrap: wrap;
     }
 </style>
