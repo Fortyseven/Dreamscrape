@@ -1,6 +1,5 @@
 <script>
     import {
-        Col,
         Dropdown,
         DropdownItem,
         DropdownMenu,
@@ -15,6 +14,7 @@
             "35mm, photography, detailed, dramatic, cinematic",
             "art by greg rutkowski, professional lighting, deviantart, artstation, cinematic, dramatic",
             "photograph, sharp focus, very detailed, nikon d850",
+            "highly detailed painting by gaston bussiere, craig mullins, j. c. leyendecker",
         ],
         "Junk Drawer": [
             "chromatic aberration",
