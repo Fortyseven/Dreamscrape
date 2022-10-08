@@ -226,11 +226,11 @@
         display: flex;
     }
     #Left {
-        width: 512px;
+        flex: 0 0 512px;
         margin: 0 1em;
     }
     #Right {
-        width: 100%;
+        flex: auto;
         margin: 0 1em;
     }
 </style>
