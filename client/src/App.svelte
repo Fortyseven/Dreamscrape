@@ -1,7 +1,5 @@
 <script>
     import { onMount } from "svelte";
-
-    import { Styles } from "sveltestrap";
     import Main from "./main/index.svelte";
     import {
         gen_results,
@@ -37,6 +35,5 @@
 </script>
 
 <main>
-    <Styles />
     <Main />
 </main>
