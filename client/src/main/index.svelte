@@ -207,12 +207,15 @@
         <ImagePanel />
     </div>
     <div id="Right">
-        <TabContent>
+        <TabContent style="overflow: scroll">
             <TabPane tabId="generated" tab="🖼 Generated" active>
                 <ResultPanel />
             </TabPane>
             <TabPane tabId="log" tab="👨‍💻 Session Log">
                 <Log />
+            </TabPane>
+            <TabPane tabId="src_images" tab="🍝 Source Images">
+                <div>TODO</div>
             </TabPane>
             <TabPane tabId="results" tab="🔖 Bookmarks">
                 <BookmarkManager />
