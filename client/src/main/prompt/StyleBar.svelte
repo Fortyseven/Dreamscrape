@@ -11,10 +11,14 @@
 
     const sections = {
         "Quick Styles": [
+            ">Photography",
             "35mm, photography, detailed, dramatic, cinematic",
-            "art by greg rutkowski, professional lighting, deviantart, artstation, cinematic, dramatic",
-            "photograph, sharp focus, very detailed, nikon d850",
+            "photography, sharp focus, very detailed, nikon d850",
+            ">Epic",
             "highly detailed painting by gaston bussiere, craig mullins, j. c. leyendecker",
+            "art by greg rutkowski, professional lighting, deviantart, artstation, cinematic, dramatic",
+            "cinematic keyframe, by fausto de martini, by wadim kashin, ultra realistic, cinematic light, ue5, unreal engine, featured on artstation, octane render, sharp focus, ray tracing, artstationhq, cgsociety, cinematic, 4k",
+            "shinkai makoto studio ghibli studio key hideaki anno sakimichan stanley artgerm lau rossdraws james jean marc simonetti elegant highly detailed digital painting artstation pixiv",
         ],
         "Junk Drawer": [
             "chromatic aberration",
