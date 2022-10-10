@@ -72,7 +72,7 @@
                     id="width"
                     min={384}
                     max={1024}
-                    step={64}
+                    step={128}
                     bind:value={$width}
                 />
             </Col>
@@ -89,7 +89,7 @@
                     id="height"
                     min={384}
                     max={1024}
-                    step={64}
+                    step={128}
                     bind:value={$height}
                 />
             </Col>
