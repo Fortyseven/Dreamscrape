@@ -14,6 +14,8 @@
 
     import AspectRatioSelector from "./AspectRatioSelector.svelte";
 
+    let showAdvanced = false;
+
     function swapDimensions(ev) {
         if (ev && ev.shiftKey) {
             $width = 512;
@@ -107,20 +109,23 @@
                 bind:value={$scale}
             />
         </Row>
-        <Row>
-            <Label for="ddim_eta">
-                ddim_eta <span class="value">{$ddim_eta}</span>
-            </Label>
-            <Input
-                type="range"
-                name="ddim_eta"
-                id="ddim_eta"
-                min={0}
-                max={1}
-                step={0.01}
-                bind:value={$ddim_eta}
-            />
-        </Row>
+        {#if showAdvanced}
+            <!-- content here -->
+            <Row>
+                <Label for="ddim_eta">
+                    ddim_eta <span class="value">{$ddim_eta}</span>
+                </Label>
+                <Input
+                    type="range"
+                    name="ddim_eta"
+                    id="ddim_eta"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    bind:value={$ddim_eta}
+                />
+            </Row>
+        {/if}
         <!-- <Row>
       <Label for="sampler">sampler</Label>
       <Input type="select" name="sampler" id="sampler" bind:value={sampler}>
@@ -150,7 +155,7 @@
 <style>
     .value {
         font-family: monospace;
-        color: blue;
+        color: #fb0;
         float: right;
     }
 
