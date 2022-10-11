@@ -173,7 +173,6 @@ common.init()
 # Initialize extension with your app.
 init_app(app)
 
-
 app.add_url_rule('/media', view_func=media.getImage,
                  methods=["GET"])
 app.add_url_rule('/bookmark', view_func=bookmark.getBookmarks,
@@ -184,3 +183,5 @@ app.add_url_rule('/bookmark', view_func=bookmark.deleteBookmark,
                  methods=["DELETE"])
 
 initSD()
+
+app.run(host='0.0.0.0', port=5501)
