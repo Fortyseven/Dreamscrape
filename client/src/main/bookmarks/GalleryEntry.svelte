@@ -11,11 +11,11 @@
 </script>
 
 <div class="entry">
-    <a href="http://localhost:5000/media?hash={entry.img_hash}" target="_blank">
+    <a href="{api.SERVER_URL}/media?hash={entry.img_hash}" target="_blank">
         <div
             class="image"
             id="galleryid-{entry.img_hash}"
-            style="background-image:url(http://localhost:5000/media?hash={entry.img_hash}&thumb=1&width=128); width: 128px; height:{(GALLERY_ENTRY_WIDTH *
+            style="background-image:url({api.SERVER_URL}/media?hash={entry.img_hash}&thumb=1&width=128); width: 128px; height:{(GALLERY_ENTRY_WIDTH *
                 entry.height) /
                 entry.width}px"
         />

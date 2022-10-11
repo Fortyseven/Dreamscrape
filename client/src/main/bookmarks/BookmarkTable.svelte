@@ -36,22 +36,22 @@
                         <td>
                             {#if entry.src_hash}
                                 <a
-                                    href="http://localhost:5000/media?hash={entry.src_hash}"
+                                    href="{api.SERVER_URL}/media?hash={entry.src_hash}"
                                     target="_blank"
                                 >
                                     <img
-                                        src="http://localhost:5000/media?hash={entry.src_hash}&thumb=1"
+                                        src="{api.SERVER_URL}/media?hash={entry.src_hash}&thumb=1"
                                     />
                                 </a>
                             {/if}
                         </td>
                         <td>
                             <a
-                                href="http://localhost:5000/media?hash={entry.img_hash}"
+                                href="{api.SERVER_URL}/media?hash={entry.img_hash}"
                                 target="_blank"
                             >
                                 <img
-                                    src="http://localhost:5000/media?hash={entry.img_hash}&thumb=1"
+                                    src="{api.SERVER_URL}/media?hash={entry.img_hash}&thumb=1"
                                 />
                             </a>
                         </td>

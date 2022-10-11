@@ -21,6 +21,7 @@
         snd_error,
         snd_finished,
         prompt_log,
+        api,
     } from "./store";
 
     import {
@@ -44,6 +45,7 @@
     import Log from "./log/Log.svelte";
     import ImagePanel from "./prompt/image/ImagePanel.svelte";
     import BookmarkManager from "./bookmarks/BookmarkManager.svelte";
+    import { SERVER_URL } from "./api";
 
     let hasError = false;
     let errMessage = "";
@@ -88,7 +90,7 @@
         $is_loading = true;
 
         axios({
-            url: "http://localhost:5000/generate",
+            url: `${SERVER_URL}/generate`,
             method: "post",
             headers: {
                 Accept: "application/json",
