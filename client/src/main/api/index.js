@@ -1,24 +1,24 @@
 import axios from "axios";
 
 import {
-  prompt,
-  ddim_steps,
-  batch_size,
-  height,
-  width,
-  scale,
-  ddim_eta,
-  seed,
-  gen_results,
-  is_loading,
-  resetStore,
-  src_image,
-  strength,
-  result_selected,
-  snd_error,
-  snd_finished,
-  prompt_log,
-  api
+    prompt,
+    ddim_steps,
+    batch_size,
+    height,
+    width,
+    scale,
+    ddim_eta,
+    seed,
+    gen_results,
+    is_loading,
+    resetStore,
+    src_image,
+    strength,
+    result_selected,
+    snd_error,
+    snd_finished,
+    prompt_log,
+    api
 } from "../store.js";
 
 
