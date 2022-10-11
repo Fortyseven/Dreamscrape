@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "nvm use && vite preview"
+    "preview": "nvm use && vite preview --host"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^1.0.1",
