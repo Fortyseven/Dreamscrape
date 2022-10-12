@@ -39,6 +39,7 @@
                                     href="{api.SERVER_URL}/media?hash={entry.src_hash}"
                                     target="_blank"
                                 >
+                                    <!-- svelte-ignore a11y-missing-attribute -->
                                     <img
                                         src="{api.SERVER_URL}/media?hash={entry.src_hash}&thumb=1"
                                     />
@@ -50,6 +51,7 @@
                                 href="{api.SERVER_URL}/media?hash={entry.img_hash}"
                                 target="_blank"
                             >
+                                <!-- svelte-ignore a11y-missing-attribute -->
                                 <img
                                     src="{api.SERVER_URL}/media?hash={entry.img_hash}&thumb=1"
                                 />
